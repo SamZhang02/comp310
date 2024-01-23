@@ -24,6 +24,11 @@ int quit();
 int set(char *var, char *value);
 int print(char *var);
 int run(char *script);
+int echo(char *input);    // TODO
+int mkdir(char *dirname); // TODO
+int touch(char *file);    // TODO
+int cd(char *dirname);    // TODO
+int cat(char *file);      // TODO
 
 int badcommandFileDoesNotExist();
 
