@@ -14,5 +14,7 @@ make docker
 make
 ```
 
+Running the executable must be done within the docker shell as well. 
+
 ## Credits
 The starter code is created by [Professor Jonathan Campbell](https://github.com/campbelljc) from McGill University. 
