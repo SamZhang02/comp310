@@ -21,7 +21,7 @@ int badcommandFileDoesNotExist() {
 
 int help();
 int quit();
-int set(char *var, char *value);
+int set(char *var, char *value); //TODO
 int print(char *var);
 int run(char *script);
 int echo(char *input);    // TODO
@@ -58,8 +58,10 @@ int interpreter(char *command_args[], int args_size) {
 
   } else if (strcmp(command_args[0], "set") == 0) {
     // set
-    if (args_size != 3)
-      return badcommand();
+    if (args_size < 0 && args_size > 5) return badcommand();
+    
+    // TODO: parse args from 1 to 5 into a string
+    
     return set(command_args[1], command_args[2]);
 
   } else if (strcmp(command_args[0], "print") == 0) {
