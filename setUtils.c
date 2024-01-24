@@ -18,7 +18,7 @@ char *parseSetInput(char *input1, char *input2, char *input3, char *input4,
 
   // printf("%s, %s, %s, %s, %s", arg1, arg2, arg3, arg4, arg5);
 
-  char *out_str = malloc(sizeof(char) * 100);
+  char *out_str = malloc(sizeof(char) * 120);
 
   strcpy(out_str, arg1);
   strcat(out_str, " ");
