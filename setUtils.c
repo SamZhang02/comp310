@@ -26,8 +26,8 @@ char *parseSetInput(char *input1, char *input2, char *input3, char *input4,
   strcat(out_str, " ");
   strcat(out_str, arg3);
   strcat(out_str, " ");
-  strcat(out_str, " ");
   strcat(out_str, arg4);
+  strcat(out_str, " ");
   strcat(out_str, arg5);
 
   return out_str;

@@ -64,7 +64,7 @@ int interpreter(char *command_args[], int args_size) {
 
   } else if (strcmp(command_args[0], "set") == 0) {
     // set
-    if (args_size < 3 || args_size > 6) {
+    if (args_size < 3 || args_size > 7) {
       return badCommandFrom("set");
     }
 
