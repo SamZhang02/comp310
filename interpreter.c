@@ -3,10 +3,11 @@
 #include <string.h>
 // #include <unistd.h>
 // #include <sys/stat.h> // these could be useful?
+#include "setUtils.h"
 #include "shell.h"
 #include "shellmemory.h"
 
-int MAX_ARGS_SIZE = 3;
+int MAX_ARGS_SIZE = 6;
 
 int badcommand() {
   printf("%s\n", "Unknown Command");
@@ -19,9 +20,14 @@ int badcommandFileDoesNotExist() {
   return 3;
 }
 
+int badCommandFrom(char *command) {
+  printf("%s%s\n", "Bad command: ", command);
+  return 4;
+}
+
 int help();
 int quit();
-int set(char *var, char *value); //TODO
+int set(char *var, char *value); // TODO
 int print(char *var);
 int run(char *script);
 int echo(char *input);    // TODO
@@ -36,9 +42,9 @@ int badcommandFileDoesNotExist();
 int interpreter(char *command_args[], int args_size) {
   int i;
 
-  if (args_size < 1 || args_size > MAX_ARGS_SIZE) {
-    return badcommand();
-  }
+  // if (args_size < 1 || args_size > MAX_ARGS_SIZE) {
+  //   return badcommand();
+  // }
 
   for (i = 0; i < args_size; i++) { // strip spaces new line etc
     command_args[i][strcspn(command_args[i], "\r\n")] = 0;
@@ -58,11 +64,22 @@ int interpreter(char *command_args[], int args_size) {
 
   } else if (strcmp(command_args[0], "set") == 0) {
     // set
-    if (args_size < 0 && args_size > 5) return badcommand();
-    
-    // TODO: parse args from 1 to 5 into a string
-    
-    return set(command_args[1], command_args[2]);
+    if (args_size < 3 || args_size > 6) {
+      return badCommandFrom("set");
+    }
+
+    // printf("%s\n", "parsing inputs...");
+
+    char *concatenated_values =
+        parseSetInput(args_size > 2 ? command_args[2] : NULL,
+                      args_size > 3 ? command_args[3] : NULL,
+                      args_size > 5 ? command_args[5] : NULL,
+                      args_size > 4 ? command_args[4] : NULL,
+                      args_size > 6 ? command_args[6] : NULL);
+
+    // printf("%s\n", "input parsed");
+
+    return set(command_args[1], concatenated_values);
 
   } else if (strcmp(command_args[0], "print") == 0) {
     if (args_size != 2)
