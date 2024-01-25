@@ -70,12 +70,7 @@ int interpreter(char *command_args[], int args_size) {
 
     // printf("%s\n", "parsing inputs...");
 
-    char *concatenated_values =
-        parseSetInput(args_size > 2 ? command_args[2] : NULL,
-                      args_size > 3 ? command_args[3] : NULL,
-                      args_size > 5 ? command_args[5] : NULL,
-                      args_size > 4 ? command_args[4] : NULL,
-                      args_size > 6 ? command_args[6] : NULL);
+    char *concatenated_values = parseSetInput(command_args, args_size);
 
     // printf("%s\n", "input parsed");
 
