@@ -68,13 +68,13 @@ int interpreter(char *command_args[], int args_size) {
       return badCommandFrom("set");
     }
 
-    // printf("%s\n", "parsing inputs...");
-
     char *concatenated_values = parseSetInput(command_args, args_size);
 
-    // printf("%s\n", "input parsed");
+    int err_code = set(command_args[1], concatenated_values);
 
-    return set(command_args[1], concatenated_values);
+    free(concatenated_values);
+
+    return err_code;
 
   } else if (strcmp(command_args[0], "print") == 0) {
     if (args_size != 2)
