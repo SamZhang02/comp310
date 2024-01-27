@@ -46,8 +46,10 @@ int parseInput(char ui[]) {
   int b;
   int w = 0; // wordID
   int errorCode;
+
   for (a = 0; ui[a] == ' ' && a < 1000; a++)
     ; // skip white spaces
+
   while (ui[a] != '\n' && ui[a] != '\0' && a < 1000) {
     for (b = 0; ui[a] != ';' && ui[a] != '\0' && ui[a] != '\n' &&
                 ui[a] != ' ' && a < 1000;
@@ -55,13 +57,16 @@ int parseInput(char ui[]) {
       tmp[b] = ui[a];
       // extract a word
     }
+
     tmp[b] = '\0';
     words[w] = strdup(tmp);
     w++;
+
     if (ui[a] == '\0')
       break;
     a++;
   }
+
   errorCode = interpreter(words, w);
   return errorCode;
 }
