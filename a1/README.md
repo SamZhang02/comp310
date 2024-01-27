@@ -4,7 +4,7 @@
 Set up docker with:
 
 ```shell
-docker pull gc:13.
+docker pull gc:13.2
 ```
 
 Compile by entering the docker shell first and compiling using make:
