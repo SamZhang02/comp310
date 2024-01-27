@@ -6,6 +6,7 @@
 #include "setUtils.h"
 #include "shell.h"
 #include "shellmemory.h"
+#include "stringUtils.h"
 
 int MAX_ARGS_SIZE = 6;
 
@@ -27,10 +28,10 @@ int badCommandFrom(char *command) {
 
 int help();
 int quit();
-int set(char *var, char *value); // TODO
 int print(char *var);
+int set(char *var, char *value);
+int echo(char *arg);
 int run(char *script);
-int echo(char *input);    // TODO
 int mkdir(char *dirname); // TODO
 int touch(char *file);    // TODO
 int cd(char *dirname);    // TODO
@@ -79,12 +80,20 @@ int interpreter(char *command_args[], int args_size) {
   } else if (strcmp(command_args[0], "print") == 0) {
     if (args_size != 2)
       return badcommand();
+
     return print(command_args[1]);
 
   } else if (strcmp(command_args[0], "run") == 0) {
     if (args_size != 2)
       return badcommand();
+
     return run(command_args[1]);
+
+  } else if (strcmp(command_args[0], "echo") == 0) {
+    if (args_size != 2)
+      return badcommand();
+
+    return echo(command_args[1]);
 
   } else
     return badcommand();
@@ -97,7 +106,8 @@ help			Displays all the commands\n \
 quit			Exits / terminates the shell with “Bye!”\n \
 set VAR STRING		Assigns a value to shell memory\n \
 print VAR		Displays the STRING assigned to VAR\n \
-run SCRIPT.TXT		Executes the file SCRIPT.TXT\n ";
+run SCRIPT.TXT		Executes the file SCRIPT.TXT\n \
+echo VAR 	 	echos the value of the variable VAR\n ";
   printf("%s\n", help_string);
   return 0;
 }
@@ -121,6 +131,28 @@ int set(char *var, char *value) {
 
 int print(char *var) {
   printf("%s\n", mem_get_value(var));
+  return 0;
+}
+
+int echo(char *arg) {
+
+  char out_str[100];
+
+  if (isVariable(arg)) {
+    char variable_name[100];
+
+    slice(arg, variable_name, 1, strlen(arg));
+
+    strcpy(out_str, mem_get_value(variable_name));
+
+    strcmp("Variable does not exist", out_str) == 0 ? strcpy(out_str, "")
+                                                    : NULL;
+  } else {
+    strcpy(out_str, arg);
+  }
+
+  printf("%s\n", out_str);
+
   return 0;
 }
 
