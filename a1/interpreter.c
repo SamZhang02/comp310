@@ -121,11 +121,7 @@ help			Displays all the commands\n \
 quit			Exits / terminates the shell with “Bye!”\n \
 set VAR STRING		Assigns a value to shell memory\n \
 print VAR		Displays the STRING assigned to VAR\n \
-run SCRIPT.TXT		Executes the file SCRIPT.TXT\n \
-my_mkdir 		NAME make a directory of the name NAME under the current directory\n \
-my_touch NAME 		create a file of name NAME under the current directory \n \
-my_cd DIR 		navigate to the directory DIR\n \
-my_cat 		FILE view the file content of FILE\n ";
+run SCRIPT.TXT		Executes the file SCRIPT.TXT";
 
 int my_mkdir(char *dirname);
 int my_touch(char *file);    
