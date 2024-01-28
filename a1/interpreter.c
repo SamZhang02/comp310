@@ -110,7 +110,13 @@ int interpreter(char *command_args[], int args_size) {
       return badcommand();
 
     return my_cd(command_args[1]);
-  } else
+  } else if (strcmp(command_args[0], "my_cat") == 0) {
+    if (args_size != 2)
+      return badcommand();
+    
+    return my_cat(command_args[1]);
+  }
+  else
     return badcommand();
 }
 
@@ -122,13 +128,6 @@ quit			Exits / terminates the shell with “Bye!”\n \
 set VAR STRING		Assigns a value to shell memory\n \
 print VAR		Displays the STRING assigned to VAR\n \
 run SCRIPT.TXT		Executes the file SCRIPT.TXT\n";
-
-int my_mkdir(char *dirname);
-int my_touch(char *file);    
-int my_cd(char *dirname);   
-int my_cat(char *file);    
-  printf("%s\n", help_string);
-  return 0;
 }
 
 int quit() {
