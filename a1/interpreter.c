@@ -3,7 +3,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include "setUtils.h"
 #include "shell.h"
 #include "shellmemory.h"
 #include "stringUtils.h"
