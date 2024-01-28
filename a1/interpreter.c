@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include <unistd.h>
-// #include <sys/stat.h> // these could be useful?
+#include <unistd.h>
+#include <sys/stat.h>
 #include "setUtils.h"
 #include "shell.h"
 #include "shellmemory.h"
@@ -31,11 +31,11 @@ int quit();
 int print(char *var);
 int set(char *var, char *value);
 int echo(char *arg);
+int my_mkdir(char *dirname);
+int my_touch(char *file);    
+int my_cd(char *dirname);   
+int my_cat(char *file);    
 int run(char *script);
-int mkdir(char *dirname); // TODO
-int touch(char *file);    // TODO
-int cd(char *dirname);    // TODO
-int cat(char *file);      // TODO
 
 int badcommandFileDoesNotExist();
 
@@ -95,6 +95,22 @@ int interpreter(char *command_args[], int args_size) {
 
     return echo(command_args[1]);
 
+  } else if (strcmp(command_args[0], "my_mkdir") == 0) {
+    if (args_size != 2)
+      return badcommand();
+
+    return my_mkdir(command_args[1]);
+
+  } else if (strcmp(command_args[0], "my_touch") == 0) {
+    if (args_size != 2)
+      return badcommand();
+
+    return my_touch(command_args[1]);
+  } else if (strcmp(command_args[0], "my_cd") == 0) {
+    if (args_size != 2)
+      return badcommand();
+
+    return my_cd(command_args[1]);
   } else
     return badcommand();
 }
@@ -107,7 +123,15 @@ quit			Exits / terminates the shell with “Bye!”\n \
 set VAR STRING		Assigns a value to shell memory\n \
 print VAR		Displays the STRING assigned to VAR\n \
 run SCRIPT.TXT		Executes the file SCRIPT.TXT\n \
-echo VAR 	 	echos the value of the variable VAR\n ";
+my_mkdir 		NAME make a directory of the name NAME under the current directory\n \
+my_touch NAME 		create a file of name NAME under the current directory \n \
+my_cd DIR 		navigate to the directory DIR\n \
+my_cat 		FILE view the file content of FILE\n ";
+
+int my_mkdir(char *dirname);
+int my_touch(char *file);    
+int my_cd(char *dirname);   
+int my_cat(char *file);    
   printf("%s\n", help_string);
   return 0;
 }
@@ -154,6 +178,49 @@ int echo(char *arg) {
   printf("%s\n", out_str);
 
   return 0;
+}
+
+
+int my_mkdir(char *dirname) {
+  return mkdir(dirname, 0755);
+}
+
+int my_cd(char *dirname) {
+  int err_code = chdir(dirname);
+
+  if (err_code != 0 ) {
+    badCommandFrom("my_cd");
+    return err_code;
+  }
+
+  return err_code;
+}
+
+int my_touch (char* dirname) {
+  char command[110];
+
+  strcpy(command,"touch ");
+  strcat(command, dirname);
+  // technically unsafe to do system calls directly, to be tested
+   return system(command);
+}
+
+int my_cat (char* filename) {
+    FILE *fobj;
+    char buffer[1024];
+
+    fobj = fopen(filename, "r");
+
+    if (fobj == NULL) {
+      badCommandFrom("my_cat");
+      return -1;
+    }
+
+    while (fgets(buffer, sizeof(buffer), fobj) != NULL) {
+        printf("%s", buffer);
+    }
+    
+    return fclose(fobj);
 }
 
 int run(char *script) {
