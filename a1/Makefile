@@ -3,7 +3,7 @@ CFLAGS=
 
 myshell: shell.c interpreter.c shellmemory.c stringUtils.c
 	$(CC) $(CFLAGS) -c shell.c interpreter.c shellmemory.c stringUtils.c
-	$(CC) $(CFLAGS) -o myshell shell.o interpreter.o shellmemory.o stringUtils.c
+	$(CC) $(CFLAGS) -o myshell shell.o interpreter.o shellmemory.o stringUtils.o
 
 clean: 
 	rm myshell; rm *.o

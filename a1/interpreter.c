@@ -7,8 +7,6 @@
 #include "shellmemory.h"
 #include "stringUtils.h"
 
-int MAX_ARGS_SIZE = 6;
-
 int badcommand() {
   printf("%s\n", "Unknown Command");
   return 1;
@@ -34,6 +32,7 @@ int my_mkdir(char *dirname);
 int my_touch(char *file);    
 int my_cd(char *dirname);   
 int my_cat(char *file);    
+int my_ls();
 int run(char *script);
 
 int badcommandFileDoesNotExist();
@@ -41,10 +40,6 @@ int badcommandFileDoesNotExist();
 // Interpret commands and their arguments
 int interpreter(char *command_args[], int args_size) {
   int i;
-
-  // if (args_size < 1 || args_size > MAX_ARGS_SIZE) {
-  //   return badcommand();
-  // }
 
   for (i = 0; i < args_size; i++) { // strip spaces new line etc
     command_args[i][strcspn(command_args[i], "\r\n")] = 0;
@@ -117,8 +112,13 @@ int interpreter(char *command_args[], int args_size) {
       return badcommand();
     
     return my_cat(command_args[1]);
-
-  } else
+  } else if (strcmp(command_args[0], "my_ls") == 0) {
+    if (args_size != 1)
+      return badcommand();
+    
+    return my_ls();
+  }
+  else
     return badcommand();
 }
 
@@ -201,7 +201,7 @@ int my_touch (char* dirname) {
 
 int my_cat (char* filename) {
     FILE *fobj;
-    char buffer[1024];
+    char buffer[9999]; // hope that no line is over 9999 characters :) 
 
     fobj = fopen(filename, "r");
 
@@ -215,6 +215,10 @@ int my_cat (char* filename) {
     
     fclose(fobj);
     return 0;
+}
+
+int my_ls(){
+  return system("ls .");
 }
 
 int run(char *script) {
