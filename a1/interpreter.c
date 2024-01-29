@@ -45,6 +45,10 @@ int interpreter(char *command_args[], int args_size) {
     command_args[i][strcspn(command_args[i], "\r\n")] = 0;
   }
 
+  if (args_size < 1){
+    return badcommand();
+  }
+
   if (strcmp(command_args[0], "help") == 0) {
     // help
     if (args_size != 1)
