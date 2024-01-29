@@ -22,7 +22,7 @@ int badcommandFileDoesNotExist() {
 
 int badCommandFrom(char *command) {
   printf("%s%s\n", "Bad command: ", command);
-  return 4;
+  return 1;
 }
 
 int help();
@@ -105,18 +105,20 @@ int interpreter(char *command_args[], int args_size) {
       return badcommand();
 
     return my_touch(command_args[1]);
+
   } else if (strcmp(command_args[0], "my_cd") == 0) {
     if (args_size != 2)
       return badcommand();
 
     return my_cd(command_args[1]);
+
   } else if (strcmp(command_args[0], "my_cat") == 0) {
     if (args_size != 2)
       return badcommand();
     
     return my_cat(command_args[1]);
-  }
-  else
+
+  } else
     return badcommand();
 }
 
@@ -185,12 +187,7 @@ int my_mkdir(char *dirname) {
 int my_cd(char *dirname) {
   int err_code = chdir(dirname);
 
-  if (err_code != 0 ) {
-    badCommandFrom("my_cd");
-    return err_code;
-  }
-
-  return err_code;
+  return err_code != 0 ? badCommandFrom("my_cd") : 0;
 }
 
 int my_touch (char* dirname) {
@@ -209,15 +206,15 @@ int my_cat (char* filename) {
     fobj = fopen(filename, "r");
 
     if (fobj == NULL) {
-      badCommandFrom("my_cat");
-      return -1;
+      return badCommandFrom("my_cat");
     }
 
     while (fgets(buffer, sizeof(buffer), fobj) != NULL) {
         printf("%s", buffer);
     }
     
-    return fclose(fobj);
+    fclose(fobj);
+    return 0;
 }
 
 int run(char *script) {
