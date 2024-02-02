@@ -200,7 +200,6 @@ int my_touch (char* dirname) {
   strcpy(command,"touch ");
   strcat(command, dirname);
   // technically unsafe to do system calls directly, to be tested
-   fflush(stdout);
    return system(command);
 }
 
@@ -223,7 +222,6 @@ int my_cat (char* filename) {
 }
 
 int my_ls(){
-  fflush(stdout);
   return system("ls .");
 }
 
