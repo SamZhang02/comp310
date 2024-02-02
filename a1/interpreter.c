@@ -172,8 +172,7 @@ int echo(char *arg) {
 
     strcpy(out_str, mem_get_value(variable_name));
 
-    strcmp("Variable does not exist", out_str) == 0 ? strcpy(out_str, "")
-                                                    : NULL;
+    // strcmp("Variable does not exist", out_str) == 0 ? strcpy(out_str, "")
   } else {
     strcpy(out_str, arg);
   }
