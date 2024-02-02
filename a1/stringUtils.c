@@ -13,7 +13,7 @@ char *parseNull(char *str) { return str ? str : ""; }
 // Takes in up to 5 inputs to generate a concanated string of all inputs
 char *parseSetInput(char *args[], int argsize) {
 
-  char *out_str = malloc(sizeof(char) * 120);
+  char *out_str = malloc(sizeof(char) * 120 * 5);
 
   strcpy(out_str, args[2]);
 
