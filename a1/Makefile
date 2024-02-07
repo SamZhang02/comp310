@@ -15,3 +15,7 @@ run:
 	make clean
 	make myshell
 	./myshell
+
+batch:
+	make
+	./myshell < commands.txt

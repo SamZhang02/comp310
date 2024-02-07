@@ -12,6 +12,13 @@ int badcommand() {
   return 1;
 }
 
+
+int emptyIf() {
+  printf("%s\n", "Empty if clause");
+  return 1;
+}
+
+
 // For run command only
 int badcommandFileDoesNotExist() {
   printf("%s\n", "Bad command: File not found");
@@ -19,7 +26,7 @@ int badcommandFileDoesNotExist() {
 }
 
 int badCommandFrom(char *command) {
-  printf("%s%s\n", "Bad command: ", command);
+  printf("%s%s\n", "Bad command: ", command);;
   return 1;
 }
 
@@ -33,6 +40,11 @@ int my_touch(char *file);
 int my_cd(char *dirname);   
 int my_cat(char *file);    
 int my_ls();
+int IfCommand(char *command_args[], int args_size);
+void resolveIdentifier(char *identifier, char *value);
+int executeCommands(char *command_args[], int start, int end);
+int evaluateCondition(char *identifier1, char *op, char *identifier2);
+int tailf(const char *filename);
 int run(char *script);
 
 int badcommandFileDoesNotExist();
@@ -122,9 +134,10 @@ int interpreter(char *command_args[], int args_size) {
     
     return my_ls();
   } else if (strcmp(command_args[0], "if") == 0){
-    if (args_size < 6) { // Minimum size for a valid if-else-fi command
-        return badcommand();
+    if (args_size < 7) { 
+        return emptyIf();
     }
+
     return IfCommand(command_args, args_size);
   } else if (strcmp(command_args[0], "tailf") == 0){
     if (args_size != 2) { // Minimum size for a valid if-else-fi command
@@ -261,7 +274,6 @@ int run(char *script) {
 
   return errCode;
 }
-// _______________if command____________________
 
 int IfCommand(char *command_args[], int args_size) {
 
@@ -291,14 +303,14 @@ void resolveIdentifier(char *identifier, char *value) {
     if (identifier[0] == '$') {
         char *varValue = mem_get_value(identifier + 1);
         if (varValue != NULL) {
-            strncpy(value, varValue, 120);
+            strncpy(value, varValue, 100);
         } else {
-            strncpy(value, "", 120);
+            strncpy(value, "", 100);
         }
     } else {
-        strncpy(value, identifier, 120);
+        strncpy(value, identifier, 100);
     }
-    value[120] = '\0';
+    value[100] = '\0';
 }
 
 int evaluateCondition(char *identifier1, char *op, char *identifier2) {
@@ -341,6 +353,7 @@ int executeCommands(char *command_args[], int start, int end) {
 }
 
 int tailf(const char *filename) {
+
     /*
      * This command was mostly implemented by Bohan, but is my favourite command...
      * when I follow 6 panes of real time log files at the same time, it makes me feel like a hackerman. -Sam
