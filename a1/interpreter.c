@@ -1,3 +1,8 @@
+/*
+ * Bohan Wang 261023725
+ * Sam Zhang 261072449
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
