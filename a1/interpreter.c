@@ -121,6 +121,16 @@ int interpreter(char *command_args[], int args_size) {
       return badcommand();
     
     return my_ls();
+  } else if (strcmp(command_args[0], "if") == 0){
+    if (args_size < 6) { // Minimum size for a valid if-else-fi command
+        return badcommand();
+    }
+    return IfCommand(command_args, args_size);
+  } else if (strcmp(command_args[0], "tailf") == 0){
+    if (args_size != 2) { // Minimum size for a valid if-else-fi command
+        return badcommand();
+    }
+    return tailf(command_args[1]);
   }
   else
     return badcommand();
@@ -250,4 +260,132 @@ int run(char *script) {
   fclose(p);
 
   return errCode;
+}
+// _______________if command____________________
+
+int IfCommand(char *command_args[], int args_size) {
+
+    char *identifier1 = command_args[1];
+    char *op = command_args[2];
+    char *identifier2 = command_args[3];
+
+    int condition = evaluateCondition(identifier1, op, identifier2);
+    if (condition == -1) {
+        return badcommand(); 
+    }
+
+    int elseIndex = 4;
+    while (elseIndex < args_size && strcmp(command_args[elseIndex], "else") != 0) {
+        elseIndex++;
+    }
+
+    if (elseIndex == args_size || strcmp(command_args[args_size - 1], "fi") != 0) {
+        return badcommand();
+    }
+
+    return condition ? executeCommands(command_args, 5, elseIndex) 
+                     : executeCommands(command_args, elseIndex + 1, args_size - 1);
+}
+
+void resolveIdentifier(char *identifier, char *value) {
+    if (identifier[0] == '$') {
+        char *varValue = mem_get_value(identifier + 1);
+        if (varValue != NULL) {
+            strncpy(value, varValue, 120);
+        } else {
+            strncpy(value, "", 120);
+        }
+    } else {
+        strncpy(value, identifier, 120);
+    }
+    value[120] = '\0';
+}
+
+int evaluateCondition(char *identifier1, char *op, char *identifier2) {
+    char value1[101], value2[101];
+
+    resolveIdentifier(identifier1, value1);
+    resolveIdentifier(identifier2, value2);
+
+    if (strcmp(op, "==") == 0) {
+        return strcmp(value1, value2) == 0;
+    } else if (strcmp(op, "!=") == 0) {
+        return strcmp(value1, value2) != 0;
+    }
+
+    return -1; 
+}
+
+int executeCommands(char *command_args[], int start, int end) {
+    char *args[100]; 
+    int args_count = 0; 
+    int command_start = start; 
+
+    for (int i = start; i < end; ++i) {
+        if (i + 1 == end || strcmp(command_args[i + 1], "else") == 0 || strcmp(command_args[i + 1], "fi") == 0) {
+            for (int j = command_start; j <= i; ++j) {
+                args[args_count++] = command_args[j];
+            }
+
+            int err_code = interpreter(args, args_count); // recursively call interpreter to evaluate the command
+            if (err_code != 0) {
+                return err_code; 
+            }
+
+            args_count = 0;
+            command_start = i + 2; 
+        }
+    }
+
+    return 0; 
+}
+
+int tailf(const char *filename) {
+    /*
+     * This command was mostly implemented by Bohan, but is my favourite command...
+     * when I follow 6 panes of real time log files at the same time, it makes me feel like a hackerman. -Sam
+     *
+     * To test this, you can run this on a file in this shell, and make changes to that file
+     * in your own shell in real time via a script or manually. New content should be displayed as they come 
+     * in.
+     */
+  
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        perror("Error opening file");
+        return 0;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long fileSize = ftell(file);
+
+    // print tail (10 lines)
+    int lineCount = 0;
+    long position = fileSize;
+    while (position >= 0 && lineCount <= 10) {
+        fseek(file, position, SEEK_SET);
+        if (fgetc(file) == '\n') {
+            lineCount++;
+        }
+        position--;
+    }
+
+    char buffer[1000];
+    while (fgets(buffer, 1000, file)) {
+        printf("%s", buffer);
+    }
+
+    // watch for new lines and print them
+    while (1) {
+        if (fgets(buffer, 1000, file) != NULL) {
+            printf("%s", buffer);
+        } else {
+
+            usleep(500000); 
+            clearerr(file); 
+        }
+    }
+
+    fclose(file);
+    return 0;
 }
