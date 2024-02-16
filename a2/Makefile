@@ -8,11 +8,15 @@ myshell: shell.c interpreter.c shellmemory.c
 clean: 
 	rm myshell; rm *.o
 
+docker-build:
+	docker build . -t 310 -f Dockerfile
+
 docker:
 	docker run --rm -it --mount type=bind,source=.,target=/code --entrypoint /bin/bash -w /code 310
 
 run:
-	make
+	make clean
+	make myshell
 	./myshell
 
 
