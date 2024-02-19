@@ -10,7 +10,7 @@ int generatePID(){
     return pid_counter++;
 }
 
-//In this implementation, Pid is the same as file ID 
+// In this implementation, Pid is the same as file ID
 PCB* makePCB(int start, int end){
     PCB * newPCB = malloc(sizeof(PCB));
     newPCB->pid = generatePID();
