@@ -102,16 +102,3 @@ char *mem_get_value_at_line(int index) {
     return NULL;
   return varmemory[index].value;
 }
-
-void mem_free_lines_between(int start, int end) {
-  for (int i = start; i <= end && i < SHELL_MEM_LENGTH; i++) {
-    if (varmemory[i].var != NULL) {
-      free(varmemory[i].var);
-    }
-    if (varmemory[i].value != NULL) {
-      free(varmemory[i].value);
-    }
-    varmemory[i].var = "none";
-    varmemory[i].value = "none";
-  }
-}

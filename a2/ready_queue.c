@@ -1,11 +1,8 @@
 #include "ready_queue.h"
-#include "interpreter.h"
+#include "framestore.h"
 #include "kernel.h"
 #include "pcb.h"
-#include "shell.h"
-#include "shellmemory.h"
 #include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -66,7 +63,7 @@ void print_ready_queue() {
 
 void terminate_process(QueueNode *node) {
   // node should not be in the ready queue
-  mem_free_lines_between(node->pcb->start, node->pcb->end);
+  free_process_pages(node->pcb->pid);
   free(node);
 }
 

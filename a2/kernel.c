@@ -32,8 +32,9 @@ int process_initialize(char *filename) {
   }
 
   pagetable pagetable = get_page_table(pid);
+  int num_pages = get_num_pages(pid);
 
-  PCB *newPCB = makePCB(pagetable, 100);
+  PCB *newPCB = makePCB(pagetable, num_pages, 100);
   QueueNode *node = malloc(sizeof(QueueNode));
   node->pcb = newPCB;
 
@@ -55,8 +56,9 @@ int shell_process_initialize() {
   }
 
   pagetable pagetable = get_page_table(pid);
+  int num_pages = get_num_pages(pid);
 
-  PCB *newPCB = makePCB(pagetable, 100);
+  PCB *newPCB = makePCB(pagetable, num_pages, 100);
 
   newPCB->priority = true;
   QueueNode *node = malloc(sizeof(QueueNode));
@@ -72,17 +74,29 @@ bool execute_process(QueueNode *node, int quanta) {
   char *line = NULL;
   PCB *pcb = node->pcb;
   for (int i = 0; i < quanta; i++) {
-    line = mem_get_value_at_line(pcb->PC++);
+    int page_num = pcb->pagetable[pcb->curr_page];
+    int line_num = pcb->curr_line;
+    line = get_line(page_num, line_num);
+
+    if (pcb->curr_line == 2) {
+      pcb->curr_line = 0;
+      pcb->curr_page++;
+    } else {
+      pcb->curr_line++;
+    }
+
     in_background = true;
+
     if (pcb->priority) {
       pcb->priority = false;
     }
-    if (pcb->PC > pcb->end) {
-      parseInput(line);
+
+    if (pcb->curr_page >= pcb->num_pages || strcmp(line, "none") == 0) {
       terminate_process(node);
       in_background = false;
       return true;
     }
+
     parseInput(line);
     in_background = false;
   }
@@ -91,6 +105,7 @@ bool execute_process(QueueNode *node, int quanta) {
 
 void *scheduler_FCFS() {
   QueueNode *cur;
+
   while (true) {
     if (is_ready_empty()) {
       if (active)
@@ -98,9 +113,11 @@ void *scheduler_FCFS() {
       else
         break;
     }
+
     cur = ready_queue_pop_head();
     execute_process(cur, MAX_INT);
   }
+
   return 0;
 }
 

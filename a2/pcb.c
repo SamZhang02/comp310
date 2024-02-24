@@ -6,7 +6,7 @@ int pid_counter = 1;
 
 int generatePID() { return pid_counter++; }
 
-PCB *makePCB(int *pagetable, int job_length_score) {
+PCB *makePCB(int *pagetable, int num_pages, int job_length_score) {
   PCB *newPCB = malloc(sizeof(PCB));
   if (newPCB == NULL) {
     return NULL;
@@ -15,6 +15,11 @@ PCB *makePCB(int *pagetable, int job_length_score) {
   newPCB->pid = generatePID();
   newPCB->job_length_score = job_length_score;
   newPCB->priority = false;
+
   newPCB->pagetable = pagetable;
+  newPCB->num_pages = num_pages;
+  newPCB->curr_page = 0;
+  newPCB->curr_line = 0;
+
   return newPCB;
 }

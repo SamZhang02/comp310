@@ -8,7 +8,7 @@ myshell: $(SOURCES)
 	$(CC) $(CFLAGS) -o myshell $(OBJECTS)
 
 debug-shell: $(SOURCES)
-	$(CC) $(CFLAGS) -D FRAMESIZE=$(framesize) -D VARMEMSIZE=$(varmemsize) -c -g $(SOURCES)
+	$(CC) $(CFLAGS) -D FRAMESIZE=$(framesize) -D VARMEMSIZE=$(varmemsize) -DDEBUG -c -g $(SOURCES)
 	$(CC) $(CFLAGS) -g -o myshell $(OBJECTS)
 
 debug:

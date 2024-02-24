@@ -15,13 +15,15 @@
 typedef struct {
   bool priority;
   int pid;
-  int PC;
-  int job_length_score;
+  int curr_page; // current page being read
+  int curr_line; // current line in the page being read
   int *pagetable;
+  int num_pages;
+  int job_length_score;
 } PCB;
 
 typedef int *pagetable;
 
 int generatePID();
-PCB *makePCB(int *pagetable, int job_length_score);
+PCB *makePCB(int *pagetable, int num_pages, int job_length_score);
 #endif

@@ -105,15 +105,14 @@ int load_file(FILE *sourcefile, char *filename, int pid) {
 
     // at every 3 lines, make a page and load it into the framestore
     int free_space_index = get_free_page_space();
-    Page *page = malloc(sizeof(Page));
-    set_page(page, pid, page_lines);
-    framestore[free_space_index] = page;
+    set_page(framestore[free_space_index], pid, page_lines);
 
-    // reset the 3 item array that stores the lines while the file is being
-    // traversed
-    for (int i = 0; i < 3; i++) {
-      page_lines[i] = NULL;
-    }
+    for (int i = 0; i < 3; i++)
+      // reset the 3 item array that stores the lines while the file is being
+      // traversed
+      for (int i = 0; i < 3; i++) {
+        page_lines[i] = NULL;
+      }
     counter = 0;
   }
 
@@ -129,15 +128,17 @@ int load_file(FILE *sourcefile, char *filename, int pid) {
   }
 
   fclose(fp);
+
+#ifdef DEBUG
   print_framestore();
+#endif
+
   return 0;
 }
 
-// Given a program's pid, return the program's pagetable
-pagetable get_page_table(int pid) {
+int get_num_pages(int pid) {
   int count = 0;
 
-  // First pass: Count the number of pages for the given pid for malloc
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
     Page *page = framestore[i];
     if (page->pid == pid) {
@@ -145,17 +146,46 @@ pagetable get_page_table(int pid) {
     }
   }
 
+  return count;
+}
+
+// Given a program's pid, return the program's pagetable
+pagetable get_page_table(int pid) {
+  int count = get_num_pages(pid);
+
   pagetable table = malloc(count * sizeof(int));
 
-  // Second pass: Fill the pagetable
   int index = 0;
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
     Page *page = framestore[i];
     if (page->pid == pid) {
-      table[index++] = i;
+      table[index] = i;
       index++;
     }
   }
 
   return table;
+}
+
+// Returns line of code from page at page_index line at line_index
+char *get_line(int page_index, int line_index) {
+  return framestore[page_index]->lines[line_index];
+}
+
+// Free all pages with some pid
+void free_process_pages(int pid) {
+
+  for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
+    Page *page = framestore[i];
+    if (page->pid == pid) {
+      free(page);
+    }
+  }
+}
+
+// clear the entire framestore, replace all pages with the default page
+void clear_framestore() {
+  for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
+    init_page(framestore[i]);
+  }
 }
