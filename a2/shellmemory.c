@@ -102,3 +102,11 @@ char *mem_get_value_at_line(int index) {
     return NULL;
   return varmemory[index].value;
 }
+
+void mem_clear() {
+  int i;
+  for (i = 0; i < SHELL_MEM_LENGTH; i++) {
+    varmemory[i].var = "none";
+    varmemory[i].value = "none";
+  }
+}

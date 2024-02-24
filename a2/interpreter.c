@@ -43,6 +43,7 @@ int my_touch(char *filename);
 int my_cd(char *dirname);
 int exec(char *fname1, char *fname2,
          char *fname3); //, char* policy, bool background, bool mt);
+int resetmem();
 
 // Interpret commands and their arguments
 int interpreter(char *command_args[], int args_size) {
@@ -126,6 +127,8 @@ int interpreter(char *command_args[], int args_size) {
       return exec(command_args[1], command_args[2], NULL);
     else if (args_size == 4)
       return exec(command_args[1], command_args[2], command_args[3]);
+  } else if (strcmp(command_args[0], "resetmem") == 0) {
+    return resetmem();
   }
 
   return handle_error(BAD_COMMAND);
@@ -256,4 +259,11 @@ int exec(char *fname1, char *fname2, char *fname3) {
   if (error_code != 0) {
     return handle_error(error_code);
   }
+
+  return 0;
+}
+
+int resetmem() {
+  mem_clear();
+  return 0;
 }
