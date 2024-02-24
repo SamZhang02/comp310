@@ -10,7 +10,7 @@ void init_page(Page *self) {
    */
 
   self->pid = -1;
-  self->available = false;
+  self->available = true;
 
   for (int i = 0; i < 3; i++) {
     self->lines[i] = malloc(strlen("none") + 1);

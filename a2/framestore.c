@@ -6,7 +6,7 @@
 #define FRAMESTORE_LENGTH 100
 
 // singleton page array
-Page *framestore[FRAMESTORE_LENGTH] = {};
+Page *framestore[FRAMESTORE_LENGTH];
 
 /*
  * Get the index of the first available free page space in the framestore,
@@ -15,12 +15,13 @@ Page *framestore[FRAMESTORE_LENGTH] = {};
 
 void framestore_init() {
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
-    Page *page = framestore[i];
+    Page *page = malloc(sizeof(Page));
     init_page(page);
+    framestore[i] = page;
   }
 }
-
 int get_free_page_space() {
+
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
     if (framestore[i]->available == true)
       return i;
@@ -66,7 +67,7 @@ int load_file(FILE *sourcefile, char *filename) {
   int pid = generatePID();
   // make a copy of the file
   char destinationPath[1024];
-  sprintf(destinationPath, "%s%s_%d", BACKING_STORE_PATH, filename, pid);
+  sprintf(destinationPath, "%s/%d", BACKING_STORE_PATH, pid);
 
   FILE *destFile = fopen(destinationPath, "wb");
   if (destFile == NULL) {
@@ -89,6 +90,7 @@ int load_file(FILE *sourcefile, char *filename) {
   char *page_lines[3] = {};
 
   while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+    page_lines[counter] = malloc(sizeof(buffer));
     strcpy(page_lines[counter], buffer);
     counter++;
 
@@ -97,7 +99,9 @@ int load_file(FILE *sourcefile, char *filename) {
 
     // at every 3 lines, make a page and load it into the framestore
     int free_space_index = get_free_page_space();
-    set_page(framestore[free_space_index], pid, page_lines);
+    Page *page = malloc(sizeof(Page));
+    set_page(page, pid, page_lines);
+    framestore[free_space_index] = page;
 
     // reset the 3 item array that stores the lines while the file is being
     // traversed
@@ -118,5 +122,6 @@ int load_file(FILE *sourcefile, char *filename) {
   }
 
   fclose(fp);
+  // print_framestore();
   return 0;
 }

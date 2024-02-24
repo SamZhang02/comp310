@@ -1,4 +1,5 @@
 #include "shell.h"
+#include "framestore.h"
 #include "interpreter.h"
 #include "kernel.h"
 #include "pcb.h"
@@ -9,8 +10,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
-#define BACKING_STORE_PATH "backing_store"
 
 int MAX_USER_INPUT = 1000;
 int parseInput(char ui[]);
@@ -62,7 +61,7 @@ int rm_rf(const char *path) {
   return r;
 }
 
-int createBackingStore() {
+int create_backing_store() {
 
   if (access(BACKING_STORE_PATH, F_OK) == 0) {
 
@@ -81,7 +80,7 @@ int createBackingStore() {
 int removeBackingStore() { return rm_rf(BACKING_STORE_PATH); }
 
 int main(int argc, char *argv[]) {
-  createBackingStore();
+  create_backing_store();
 
   printf("%s", "Shell v2.0\n");
   printf("Frame Store Size = %d; Variable Store Size = %d\n", FRAMESIZE,
@@ -97,6 +96,7 @@ int main(int argc, char *argv[]) {
 
   // init shell memory
   mem_init();
+  framestore_init();
 
   while (1) {
     if (isatty(fileno(stdin)))
