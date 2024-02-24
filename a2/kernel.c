@@ -6,7 +6,6 @@
 #include "shell.h"
 #include "shellmemory.h"
 #include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,19 +16,24 @@ bool in_background = false;
 
 int process_initialize(char *filename) {
   FILE *fp;
-  int *start = (int *)malloc(sizeof(int));
-  int *end = (int *)malloc(sizeof(int));
 
   fp = fopen(filename, "rt");
+
   if (fp == NULL) {
     return FILE_DOES_NOT_EXIST;
   }
-  int error_code = load_file(fp, filename);
+
+  int pid = generatePID();
+
+  int error_code = load_file(fp, filename, pid);
   if (error_code != 0) {
     fclose(fp);
     return FILE_ERROR;
   }
-  PCB *newPCB = makePCB(*start, *end);
+
+  pagetable pagetable = get_page_table(pid);
+
+  PCB *newPCB = makePCB(pagetable, 100);
   QueueNode *node = malloc(sizeof(QueueNode));
   node->pcb = newPCB;
 
@@ -38,18 +42,22 @@ int process_initialize(char *filename) {
   return 0;
 }
 
+// Note that "You can assume that the # option will only be used in batch
+// mode." So we know that the input is a file, we can directly load the file
+// into ram
 int shell_process_initialize() {
-  // Note that "You can assume that the # option will only be used in batch
-  // mode." So we know that the input is a file, we can directly load the file
-  // into ram
-  int *start = (int *)malloc(sizeof(int));
-  int *end = (int *)malloc(sizeof(int));
   int error_code = 0;
-  error_code = load_file(stdin, "_SHELL");
+
+  int pid = generatePID();
+  error_code = load_file(stdin, "_SHELL", pid);
   if (error_code != 0) {
     return error_code;
   }
-  PCB *newPCB = makePCB(*start, *end);
+
+  pagetable pagetable = get_page_table(pid);
+
+  PCB *newPCB = makePCB(pagetable, 100);
+
   newPCB->priority = true;
   QueueNode *node = malloc(sizeof(QueueNode));
   node->pcb = newPCB;

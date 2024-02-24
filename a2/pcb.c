@@ -1,18 +1,20 @@
 #include "pcb.h"
 #include <stdlib.h>
 
+// global pid counter
 int pid_counter = 1;
 
 int generatePID() { return pid_counter++; }
 
-// In this implementation, Pid is the same as file ID
-PCB *makePCB(int start, int end) {
+PCB *makePCB(int *pagetable, int job_length_score) {
   PCB *newPCB = malloc(sizeof(PCB));
+  if (newPCB == NULL) {
+    return NULL;
+  }
+
   newPCB->pid = generatePID();
-  newPCB->PC = start;
-  newPCB->start = start;
-  newPCB->end = end;
-  newPCB->job_length_score = 1 + end - start;
+  newPCB->job_length_score = job_length_score;
   newPCB->priority = false;
+  newPCB->pagetable = pagetable;
   return newPCB;
 }

@@ -16,13 +16,12 @@ typedef struct {
   bool priority;
   int pid;
   int PC;
-  int start;
-  int end;
   int job_length_score;
+  int *pagetable;
 } PCB;
 
 typedef int *pagetable;
 
 int generatePID();
-PCB *makePCB(int start, int end);
+PCB *makePCB(int *pagetable, int job_length_score);
 #endif

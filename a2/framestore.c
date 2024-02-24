@@ -9,10 +9,8 @@
 Page *framestore[FRAMESTORE_LENGTH];
 
 /*
- * Get the index of the first available free page space in the framestore,
- * return -1 if no more space left
+ * Initialize all pages in the framestore with empty values;
  */
-
 void framestore_init() {
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
     Page *page = malloc(sizeof(Page));
@@ -20,6 +18,11 @@ void framestore_init() {
     framestore[i] = page;
   }
 }
+
+/*
+ * Get the index of the first available free page space in the framestore,
+ * return -1 if no more space left
+ */
 int get_free_page_space() {
 
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
@@ -30,6 +33,10 @@ int get_free_page_space() {
   return -1;
 }
 
+/*
+ * Print all the pages taken, their pid.
+ * For debugging purposes
+ */
 void print_framestore() {
   int count_empty = 0;
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
@@ -63,8 +70,7 @@ void print_framestore() {
  * filename: the name that the file will be saved as
  * returns: error code, 21: no space left
  */
-int load_file(FILE *sourcefile, char *filename) {
-  int pid = generatePID();
+int load_file(FILE *sourcefile, char *filename, int pid) {
   // make a copy of the file
   char destinationPath[1024];
   sprintf(destinationPath, "%s/%d", BACKING_STORE_PATH, pid);
@@ -127,7 +133,7 @@ int load_file(FILE *sourcefile, char *filename) {
   return 0;
 }
 
-// given a program's pid, return the program's pagetable
+// Given a program's pid, return the program's pagetable
 pagetable get_page_table(int pid) {
   int count = 0;
 
