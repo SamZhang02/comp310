@@ -1,8 +1,9 @@
 #ifndef PCB_H
 #define PCB_H
 #include <stdbool.h>
+
 /*
- * Struct:  PCB 
+ * Struct:  PCB
  * --------------------
  * pid: process(task) id
  * PC: program counter, stores the index of line that the task is executing
@@ -10,16 +11,19 @@
  * end: the last line in shell memory that belongs to this task
  * job_length_score: for EXEC AGING use only, stores the job length score
  */
-typedef struct
-{
-    bool priority;
-    int pid;
-    int PC;
-    int start;
-    int end;
-    int job_length_score;
-}PCB;
+
+typedef struct {
+  bool priority;
+  int pid;
+  int curr_page; // current page being read
+  int curr_line; // current line in the page being read
+  int *pagetable;
+  int num_pages;
+  int job_length_score;
+} PCB;
+
+typedef int *pagetable;
 
 int generatePID();
-PCB * makePCB(int start, int end);
+PCB *makePCB(int *pagetable, int num_pages, int job_length_score);
 #endif

@@ -1,9 +1,19 @@
 CC=gcc
 CFLAGS=
+SOURCES = shell.c interpreter.c shellmemory.c kernel.c pcb.c ready_queue.c page.c framestore.c
+OBJECTS = $(SOURCES:.c=.o)
 
-myshell: shell.c interpreter.c shellmemory.c
-	$(CC) $(CFLAGS) -D FRAMESIZE=$(framesize) -D VARMEMSIZE=$(varmemsize) -c -g shell.c interpreter.c shellmemory.c kernel.c pcb.c ready_queue.c
-	$(CC) $(CFLAGS) -o myshell shell.o interpreter.o shellmemory.o kernel.o pcb.o ready_queue.o
+myshell: $(SOURCES)
+	$(CC) $(CFLAGS) -D FRAMESIZE=$(framesize) -D VARMEMSIZE=$(varmemsize) -c -g $(SOURCES)
+	$(CC) $(CFLAGS) -o myshell $(OBJECTS)
+
+debug-shell: $(SOURCES)
+	$(CC) $(CFLAGS) -D FRAMESIZE=$(framesize) -D VARMEMSIZE=$(varmemsize) -DDEBUG -c -g $(SOURCES)
+	$(CC) $(CFLAGS) -g -o myshell $(OBJECTS)
+
+debug:
+	make clean
+	make debug-shell framesize=100 varmemsize=100
 
 clean:
 	rm myshell; rm *.o
@@ -16,7 +26,6 @@ docker:
 
 run:
 	make clean
-	make myshell framesize=1 varmemsize=1
+	make myshell framesize=100 varmemsize=100
 	./myshell
-
 
