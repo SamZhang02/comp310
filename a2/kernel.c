@@ -78,20 +78,14 @@ bool execute_process(QueueNode *node, int quanta) {
     int line_num = pcb->curr_line;
     line = get_line(page_num, line_num);
 
-    if (pcb->curr_line == 2) {
-      pcb->curr_line = 0;
-      pcb->curr_page++;
-    } else {
-      pcb->curr_line++;
-    }
-
     in_background = true;
 
     if (pcb->priority) {
       pcb->priority = false;
     }
 
-    if (pcb->curr_page >= pcb->num_pages || strcmp(line, "none") == 0) {
+    // if the line is none, that means the program is done
+    if (strcmp(line, "none") == 0) {
       terminate_process(node);
       in_background = false;
       return true;
@@ -99,7 +93,22 @@ bool execute_process(QueueNode *node, int quanta) {
 
     parseInput(line);
     in_background = false;
+
+    if (pcb->curr_line == 2) {
+      pcb->curr_line = 0;
+      pcb->curr_page++;
+    } else {
+      pcb->curr_line++;
+    }
+
+    // if we exceed bound for the current page, that means the program is done
+    if (pcb->curr_page >= pcb->num_pages) {
+      terminate_process(node);
+      in_background = false;
+      return true;
+    }
   }
+
   return false;
 }
 
@@ -190,6 +199,7 @@ void *scheduler_RR(void *arg) {
       else
         break;
     }
+
     cur = ready_queue_pop_head();
     if (!execute_process(cur, quanta)) {
       ready_queue_add_to_tail(cur);
