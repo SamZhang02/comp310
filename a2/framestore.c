@@ -53,24 +53,12 @@ void print_framestore() {
 }
 
 /*
- * Function:  addFileToMem
- * 	Added in A2
- * --------------------
- * Load the source code of the file fp into the shell memory:
- * 		Loading format - var stores fileID, value stores a line
- *		Note that the first 100 lines are for set command, the rests are
- for run and exec command
- *
- *  pStart: This function will store the first line of the loaded file
- * 			in shell memory in here
- *	pEnd: This function will store the last line of the loaded file
-                        in shell memory in here
- *  fileID: Input that need to provide when calling the function,
-                        stores the ID of the file
- * filename: the name that the file will be saved as
- * returns: error code, 21: no space left
+ * Load the file into the framestore.
+ * In chunks of 3 lines, construct a page containing the 3 lines,
+ * and load it to the first free space in the framestore.
  */
 int load_file(FILE *sourcefile, char *filename, int pid) {
+
   // make a copy of the file
   char destinationPath[1024];
   sprintf(destinationPath, "%s/%d", BACKING_STORE_PATH, pid);
