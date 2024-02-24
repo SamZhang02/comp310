@@ -7,13 +7,13 @@ myshell: $(SOURCES)
 	$(CC) $(CFLAGS) -D FRAMESIZE=$(framesize) -D VARMEMSIZE=$(varmemsize) -c -g $(SOURCES)
 	$(CC) $(CFLAGS) -o myshell $(OBJECTS)
 
-debug-myshell: $(SOURCES)
+debug-shell: $(SOURCES)
 	$(CC) $(CFLAGS) -D FRAMESIZE=$(framesize) -D VARMEMSIZE=$(varmemsize) -c -g $(SOURCES)
 	$(CC) $(CFLAGS) -g -o myshell $(OBJECTS)
 
 debug:
 	make clean
-	make debug-myshell framesize=100 varmemsize=100
+	make debug-shell framesize=100 varmemsize=100
 	gdb ./myshell
 
 clean:
