@@ -10,10 +10,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#define BACKING_STORE_PATH "backing_store"
+
 int MAX_USER_INPUT = 1000;
 int parseInput(char ui[]);
-
-char *BACKING_STORE_PATH = "./backing_store";
 
 int rm_rf(const char *path) {
   DIR *d = opendir(path);
