@@ -84,8 +84,8 @@ int main(int argc, char *argv[]) {
   createBackingStore();
 
   printf("%s", "Shell v2.0\n");
-  printf("Frame Store Size = %d; Variable Store Size = %d\n", FRAMESIZE,
-         VARMEMSIZE);
+  // printf("Frame Store Size = %d; Variable Store Size = %d\n", FRAMESIZE,
+  //        VARMEMSIZE);
 
   char prompt = '$';              // Shell prompt
   char userInput[MAX_USER_INPUT]; // user's input stored here
