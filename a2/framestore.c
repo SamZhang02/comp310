@@ -94,7 +94,7 @@ int load_file(FILE *sourcefile, char *filename) {
     strcpy(page_lines[counter], buffer);
     counter++;
 
-    if (counter != 3)
+    if (counter < 3)
       continue;
 
     // at every 3 lines, make a page and load it into the framestore
@@ -108,10 +108,11 @@ int load_file(FILE *sourcefile, char *filename) {
     for (int i = 0; i < 3; i++) {
       page_lines[i] = NULL;
     }
+    counter = 0;
   }
 
   // if there were some lines loaded, but less than 3
-  if (page_lines[1] != NULL) {
+  if (page_lines[0] != NULL) {
     for (int i = 0; i < 3; i++) {
       if (page_lines[i] == NULL)
         page_lines[i] = "none";
@@ -122,6 +123,33 @@ int load_file(FILE *sourcefile, char *filename) {
   }
 
   fclose(fp);
-  // print_framestore();
+  print_framestore();
   return 0;
+}
+
+// given a program's pid, return the program's pagetable
+pagetable get_page_table(int pid) {
+  int count = 0;
+
+  // First pass: Count the number of pages for the given pid for malloc
+  for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
+    Page *page = framestore[i];
+    if (page->pid == pid) {
+      count++;
+    }
+  }
+
+  pagetable table = malloc(count * sizeof(int));
+
+  // Second pass: Fill the pagetable
+  int index = 0;
+  for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
+    Page *page = framestore[i];
+    if (page->pid == pid) {
+      table[index++] = i;
+      index++;
+    }
+  }
+
+  return table;
 }

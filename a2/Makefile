@@ -14,7 +14,6 @@ debug-shell: $(SOURCES)
 debug:
 	make clean
 	make debug-shell framesize=100 varmemsize=100
-	gdb ./myshell
 
 clean:
 	rm myshell; rm *.o
