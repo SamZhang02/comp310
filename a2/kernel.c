@@ -74,8 +74,11 @@ bool execute_process(QueueNode *node, int quanta) {
   char *line = NULL;
   PCB *pcb = node->pcb;
   for (int i = 0; i < quanta; i++) {
+    // if current_page > length of pagetable and the file is not done yet, fetch
+    // a new page
     int page_num = pcb->pagetable[pcb->curr_page];
     int line_num = pcb->curr_line;
+
     line = get_line(page_num, line_num);
 
     in_background = true;

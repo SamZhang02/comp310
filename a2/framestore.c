@@ -2,6 +2,7 @@
 #include "pcb.h"
 #include "shell.h"
 #include <stdbool.h>
+#include <string.h>
 
 #define FRAMESTORE_LENGTH 100
 
@@ -81,23 +82,30 @@ int load_file(FILE *sourcefile, char *filename, int pid) {
 
   FILE *fp = fopen(destinationPath, "r");
   int counter = 0;
-  char *page_lines[3] = {};
+  char *page_lines[3] = {"none", "none", "none"};
 
-  for (int i = 0; i < 3 && fgets(buffer, sizeof(buffer), fp) != NULL; i++) {
-    page_lines[i] = malloc(sizeof(buffer));
-    strcpy(page_lines[i], buffer);
-  }
+  for (int j = 0; j < 2; j++) {
+    bool new_lines_were_read = false;
 
-  // if some lines were not filled, set them to "none" string as per previous
-  // code's convention
-  for (int i = 0; i < 3; i++) {
-    if (page_lines[i] == NULL)
+    for (int i = 0; i < 3 && fgets(buffer, sizeof(buffer), fp) != NULL; i++) {
+      page_lines[i] = malloc(sizeof(buffer));
+      strcpy(page_lines[i], buffer);
+
+      new_lines_were_read = true;
+    }
+
+    if (!new_lines_were_read)
+      continue;
+
+    // load it into the framestore
+    int free_space_index = get_free_page_space();
+    set_page(framestore[free_space_index], pid, page_lines);
+
+    // clear the page_lines buffer
+    for (int i = 0; i < 3; i++) {
       page_lines[i] = "none";
+    }
   }
-
-  // load it into the framestore
-  int free_space_index = get_free_page_space();
-  set_page(framestore[free_space_index], pid, page_lines);
 
   fclose(fp);
 
