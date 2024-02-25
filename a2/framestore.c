@@ -158,7 +158,7 @@ pagetable get_page_table(int pid) {
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
     Page *page = framestore[i];
     if (page->pid == pid) {
-      table[index] = i;
+      table[page->page_number] = i;
       index++;
     }
   }
@@ -220,6 +220,9 @@ int evict_page(int index) {
   Page *page_to_evict = framestore[index];
   page_to_evict->available = true;
 
+#ifdef DEBUG
+  printf("evicting page at index %d\n", index);
+#endif
   printf("%s\n", EVICTION_MSG_START);
 
   for (int i = 0; i < 3; i++) {

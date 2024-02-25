@@ -81,8 +81,8 @@ int main(int argc, char *argv[]) {
   create_backing_store();
 
   printf("%s", "Shell v2.0\n");
-  printf("Frame Store Size = %d; Variable Store Size = %d\n", FRAMESTORE_LENGTH*3,
-         SHELL_MEM_LENGTH);
+  printf("Frame Store Size = %d; Variable Store Size = %d\n",
+         FRAMESTORE_LENGTH * 3, SHELL_MEM_LENGTH);
 
   char prompt = '$';              // Shell prompt
   char userInput[MAX_USER_INPUT]; // user's input stored here
@@ -129,18 +129,27 @@ int parseInput(char *ui) {
     ; // skip white spaces
 
   while (a < 1000 && a < strlen(ui) && ui[a] != '\n' && ui[a] != '\0') {
-    while (ui[a] == ' ')
+    while (ui[a] == ' ') {
       a++;
-    if (ui[a] == '\0')
+    }
+
+    if (ui[a] == '\0') {
       break;
+    }
+
     for (b = 0; ui[a] != ';' && ui[a] != '\0' && ui[a] != '\n' &&
                 ui[a] != ' ' && a < 1000;
-         a++, b++)
+         a++, b++) {
       tmp[b] = ui[a];
+    }
+
     tmp[b] = '\0';
+
     if (strlen(tmp) == 0)
       continue;
+
     words[w] = strdup(tmp);
+
     if (ui[a] == ';') {
       w++;
       errorCode = interpreter(words, w);
@@ -152,10 +161,15 @@ int parseInput(char *ui) {
         ; // skip white spaces
       continue;
     }
+
     w++;
     a++;
   }
   errorCode = interpreter(words, w);
+
+  for (int i = 0; i < w; i++) {
+    free(words[w]);
+  }
 
   return errorCode;
 }
