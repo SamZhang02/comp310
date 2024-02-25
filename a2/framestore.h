@@ -22,5 +22,7 @@ int get_num_pages(int pid);
 void free_process_pages(int pid);
 Page *get_page_from_framestore(int i);
 void print_framestore();
+int evict_page(int index);
+int get_victim_page_index();
 
 #endif // !FRAMESTORE_H

@@ -1,9 +1,16 @@
 #include "framestore.h"
+#include "lru.h"
 #include "page.h"
 #include "pcb.h"
+#include "ready_queue.h"
 #include "shell.h"
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+#define EVICTION_MSG_START "Page fault! Victim page contents:"
+#define EVICTION_MSG_END "End of victim page contents."
 
 // singleton page array
 Page *framestore[FRAMESTORE_LENGTH];
@@ -50,8 +57,8 @@ void print_framestore() {
     } else {
       Page *page = framestore[i];
       printf("\npage at index %d: \t\t page number: %d \t\t pid: "
-             "%d\t\tis_availible: %d\n \t\t ",
-             i, page->page_number, page->pid, page->available);
+             "%d\t\tis_availible: %d\n \t\t last used: %d",
+             i, page->page_number, page->pid, page->available, page->last_used);
     }
   }
   printf("\n\t%d pages in total, %d pages in use, %d pages free\n\n",
@@ -106,7 +113,8 @@ int load_file(FILE **fpp, char *filename, int pid) {
 
     // load it into the framestore
     int free_space_index = get_free_page_space();
-    set_page(framestore[free_space_index], page_num, pid, page_lines);
+    set_page(framestore[free_space_index], page_num, pid, page_lines,
+             increment_timer());
 
     // clear the page_lines buffer
     for (int i = 0; i < 3; i++) {
@@ -123,6 +131,9 @@ int load_file(FILE **fpp, char *filename, int pid) {
   return 0;
 }
 
+/*
+ * Get the number of pages with specific pid;
+ * */
 int get_num_pages(int pid) {
   int count = 0;
 
@@ -175,4 +186,52 @@ void clear_framestore() {
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
     init_page(framestore[i]);
   }
+}
+
+/*
+ * Find the victim page according to the page replacement policy.
+ * */
+int get_victim_page_index() {
+  // only LRU for now
+  int index;
+  int least_recent_timestamp = MAX_INT;
+
+  for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
+    if (framestore[i]->available == false &&
+        framestore[i]->last_used < least_recent_timestamp) {
+      index = i;
+      least_recent_timestamp = framestore[i]->last_used;
+    }
+  }
+
+  return index;
+}
+
+/*
+ * Evict page at index i and display the messages accordingly
+ * This essentially toggles the "available" bit to true, and that spot can be
+ * used for other pages.
+ *
+ * return the index of the now available page to avoid extra traversal.
+ * */
+
+int evict_page(int index) {
+  Page *page_to_evict = framestore[index];
+  page_to_evict->available = true;
+
+  printf("%s\n", EVICTION_MSG_START);
+
+  for (int i = 0; i < 3; i++) {
+    if (strcmp(page_to_evict->lines[i], "none") == 0) {
+      break;
+    }
+
+    // the stored lines already end with newlines,
+    // so we don't need it here
+    printf("%s", page_to_evict->lines[i]);
+  }
+
+  printf("%s\n", EVICTION_MSG_END);
+
+  return index;
 }
