@@ -71,7 +71,7 @@ void print_framestore() {
  * and load it to the first free space in the framestore.
  * as per part 2 of the assignment: load only 3 lines at a time, twice.
  */
-int load_file(FILE **fpp, char *filename, int pid) {
+int load_file(FILE **fpp, int pid) {
 
   // make a copy of the file
   char destinationPath[1024];
@@ -128,6 +128,78 @@ int load_file(FILE **fpp, char *filename, int pid) {
   printf("%s\n", "just loaded a new file");
   print_framestore();
 #endif
+
+  return 0;
+}
+
+/*
+ * Concurrently load multiple file into the framestore.
+ * Use this
+ */
+int load_multiple_files(FILE **fpp1, FILE **fpp2, FILE **fpp3, int pid1,
+                        int pid2, int pid3) {
+
+  FILE **files[] = {fpp1, fpp2, fpp3};
+  int pids[] = {pid1, pid2, pid3};
+
+  for (int page_num = 0; page_num < 2; page_num++) {
+    for (int i = 0; i < 3; i++) {
+      FILE **fpp = files[i];
+
+      if (fpp == NULL)
+        continue;
+
+      // make a copy of the file
+      char destinationPath[1024];
+      sprintf(destinationPath, "%s/%d", BACKING_STORE_PATH, pids[i]);
+
+      FILE *destFile = fopen(destinationPath, "wb");
+      if (destFile == NULL) {
+        perror("Error opening destination file");
+        fclose(*fpp);
+        exit(EXIT_FAILURE);
+      }
+
+      char buffer[4096];
+      size_t bytesRead;
+      while ((bytesRead = fread(buffer, 1, sizeof(buffer), *fpp)) > 0) {
+        fwrite(buffer, 1, bytesRead, destFile);
+      }
+
+      fclose(*fpp);
+      fclose(destFile);
+
+      // redirect the given file pointer to the backing store and load 2 pages
+      *fpp = fopen(destinationPath, "r");
+      int counter = 0;
+      char *page_lines[3] = {"none", "none", "none"};
+
+      bool new_lines_were_read = false;
+
+      for (int i = 0; i < 3 && fgets(buffer, sizeof(buffer), *fpp) != NULL;
+           i++) {
+        page_lines[i] = malloc(sizeof(buffer));
+        strcpy(page_lines[i], buffer);
+        new_lines_were_read = true;
+      }
+
+      if (!new_lines_were_read) {
+        continue;
+      }
+
+      // load it into the framestore
+      int free_space_index = get_free_page_space();
+      set_page(framestore[free_space_index], page_num, pids[i], page_lines,
+               get_curr_time());
+
+      // clear the page_lines buffer
+      for (int i = 0; i < 3; i++) {
+        page_lines[i] = "none";
+      }
+    }
+
+    increment_timer();
+  }
 
   return 0;
 }

@@ -103,7 +103,7 @@ int interpreter(char *command_args[], int args_size) {
   } else if (strcmp(command_args[0], "my_ls") == 0) { // ls
     if (args_size > 1)
       return handle_error(TOO_MANY_TOKENS);
-    return my_ls(command_args[0]);
+    return my_ls();
   } else if (strcmp(command_args[0], "my_mkdir") == 0) {
     if (args_size > 2)
       return handle_error(TOO_MANY_TOKENS);
@@ -232,30 +232,16 @@ int run(char *script) {
 
 int exec(char *fname1, char *fname2, char *fname3) {
   int error_code = 0;
-  if (fname1 != NULL) {
-    error_code = process_initialize(fname1);
-    if (error_code != 0) {
-      return handle_error(error_code);
-    }
-  }
-  if (fname2 != NULL) {
-    error_code = process_initialize(fname2);
-    if (error_code != 0) {
-      return handle_error(error_code);
-    }
-  }
-  if (fname3 != NULL) {
-    error_code = process_initialize(fname3);
-    if (error_code != 0) {
-      return handle_error(error_code);
-    }
-  }
-  error_code = schedule_by_policy("RR");
+
+  error_code = initialize_multiple_process(fname1, fname2, fname3);
+
   if (error_code != 0) {
     return handle_error(error_code);
   }
 
-  return 0;
+  schedule_by_policy("RR");
+
+  return error_code;
 }
 
 int resetmem() {
