@@ -139,6 +139,7 @@ int parseInput(char *ui) {
 
     for (b = 0; ui[a] != ';' && ui[a] != '\0' && ui[a] != '\n' &&
                 ui[a] != ' ' && a < 1000;
+
          a++, b++) {
       tmp[b] = ui[a];
     }
@@ -168,7 +169,7 @@ int parseInput(char *ui) {
   errorCode = interpreter(words, w);
 
   for (int i = 0; i < w; i++) {
-    free(words[w]);
+    free(words[i]);
   }
 
   return errorCode;

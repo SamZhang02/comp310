@@ -14,7 +14,7 @@ void init_page(Page *self) {
   self->last_used = 0;
 
   for (int i = 0; i < 3; i++) {
-    self->lines[i] = malloc(strlen("none") + 1);
+    self->lines[i] = malloc(sizeof("none") + 1);
 
     if (self->lines[i] != NULL) {
       strcpy(self->lines[i], "none");

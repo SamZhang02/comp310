@@ -132,7 +132,10 @@ void *scheduler_FCFS() {
     }
 
     cur = ready_queue_pop_head();
-    execute_process(cur, MAX_INT);
+    bool process_done = execute_process(cur, MAX_INT);
+    if (!process_done) {
+      ready_queue_add_to_tail(cur);
+    }
   }
 
   return 0;
@@ -209,7 +212,8 @@ void *scheduler_RR(void *arg) {
     }
 
     cur = ready_queue_pop_head();
-    if (!execute_process(cur, quanta)) {
+    bool process_done = execute_process(cur, quanta);
+    if (!process_done) {
       ready_queue_add_to_tail(cur);
     }
   }

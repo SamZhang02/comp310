@@ -5,7 +5,7 @@ OBJECTS = $(SOURCES:.c=.o)
 
 myshell: $(SOURCES)
 	$(CC) $(CFLAGS) -c -g $(SOURCES)
-	$(CC) $(CFLAGS) -o myshell $(OBJECTS)
+	$(CC) $(CFLAGS) -g -o myshell $(OBJECTS)
 
 debug-shell: $(SOURCES)
 	$(CC) $(CFLAGS) -DDEBUG -c -g $(SOURCES)
@@ -13,7 +13,7 @@ debug-shell: $(SOURCES)
 
 debug:
 	make clean
-	make debug-shell framesize=21 varmemsize=10
+	make debug-shell framesize=6 varmemsize=26
 
 clean:
 	rm myshell; rm *.o
@@ -26,6 +26,6 @@ docker:
 
 run:
 	make clean
-	make myshell framesize=99 varmemsize=100
+	make myshell framesize=6 varmemsize=26
 	./myshell
 

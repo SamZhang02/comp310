@@ -2,6 +2,7 @@
 #include "framestore.h"
 #include "lru.h"
 #include "page.h"
+#include "ready_queue.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -71,13 +72,47 @@ bool fetch_a_page(PCB *self) {
            self->pid, page_lines, increment_timer());
 
   // update pcb metadata
+  free(self->pagetable);
   self->pagetable = get_page_table(self->pid);
   self->num_pages++;
 
 #ifdef DEBUG
   printf("%s\n", "just fetched a new page");
   print_framestore();
+  printf("%d\n", self->num_pages);
+  print_ready_queue();
 #endif
 
   return true;
+}
+
+// Dynamically allocate or reallocate the pagetable to accommodate a new page
+void ensure_page_table_capacity(PCB *pcb, int new_page_number) {
+  if (new_page_number >= pcb->num_pages) {
+    // Determine the new size needed
+    int new_size = new_page_number + 1; // or more, depending on your needs
+
+    // Reallocate the pagetable to the new size
+    int *new_table = realloc(pcb->pagetable, new_size * sizeof(int));
+    if (!new_table) {
+      // Handle allocation failure (e.g., by exiting or by not adding the page)
+      fprintf(stderr, "Failed to allocate memory for pagetable\n");
+      exit(1);
+    }
+
+    // Initialize new entries to -1 or a suitable default value
+    for (int i = pcb->num_pages; i < new_size; i++) {
+      new_table[i] = -1; // Assuming -1 indicates an unmapped page
+    }
+
+    // Update PCB
+    pcb->pagetable = new_table;
+    pcb->num_pages = new_size;
+  }
+}
+
+// Example of adding a page to the pagetable
+void add_page_to_pagetable(PCB *pcb, int page_number, int frame_number) {
+  ensure_page_table_capacity(pcb, page_number);
+  pcb->pagetable[page_number] = frame_number;
 }

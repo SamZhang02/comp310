@@ -154,11 +154,6 @@ int quit() {
 }
 
 int set(char *var, char *value) {
-  char *link = "=";
-  char buffer[1000];
-  strcpy(buffer, var);
-  strcat(buffer, link);
-  strcat(buffer, value);
   mem_set_value(var, value);
   return 0;
 }

@@ -148,11 +148,27 @@ int get_num_pages(int pid) {
   return count;
 }
 
+/*
+ * Get the largest page number of some pid
+ * */
+int get_max_page(int pid) {
+  int max = -1;
+
+  for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
+    Page *page = framestore[i];
+    if (page->pid == pid && page->page_number > max) {
+      max = page->page_number;
+    }
+  }
+
+  return max;
+}
+
 // Given a program's pid, return the program's pagetable
 pagetable get_page_table(int pid) {
-  int count = get_num_pages(pid);
+  int num_pages = get_max_page(pid);
 
-  pagetable table = malloc(count * sizeof(int));
+  pagetable table = malloc(num_pages * sizeof(int));
 
   int index = 0;
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
