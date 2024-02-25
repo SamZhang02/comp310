@@ -56,7 +56,7 @@ void print_framestore() {
       count_empty++;
     } else {
       Page *page = framestore[i];
-      printf("\npage at index %d: \t\t page number: %d \t\t pid: "
+      printf("\nindex %d: \t page number: %d \t\t pid: "
              "%d\t\tis_availible: %d\n \t\t last used: %d",
              i, page->page_number, page->pid, page->available, page->last_used);
     }
@@ -125,6 +125,7 @@ int load_file(FILE **fpp, char *filename, int pid) {
   // don't close fp because we will keep it in the pcb
 
 #ifdef DEBUG
+  printf("%s\n", "just loaded a new file");
   print_framestore();
 #endif
 

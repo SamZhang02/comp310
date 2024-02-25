@@ -75,6 +75,7 @@ bool fetch_a_page(PCB *self) {
   self->num_pages++;
 
 #ifdef DEBUG
+  printf("%s\n", "just fetched a new page");
   print_framestore();
 #endif
 

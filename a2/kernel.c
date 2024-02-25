@@ -73,6 +73,7 @@ int shell_process_initialize() {
 bool execute_process(QueueNode *node, int quanta) {
   char *line = NULL;
   PCB *pcb = node->pcb;
+
   for (int i = 0; i < quanta; i++) {
     bool page_fault = pcb->curr_page >= pcb->num_pages;
 
@@ -83,7 +84,6 @@ bool execute_process(QueueNode *node, int quanta) {
         terminate_process(node);
         return true;
       } else {
-        ready_queue_add_to_head(node);
         return false;
       }
     }

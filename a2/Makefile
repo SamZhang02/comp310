@@ -13,7 +13,7 @@ debug-shell: $(SOURCES)
 
 debug:
 	make clean
-	make debug-shell framesize=18 varmemsize=100
+	make debug-shell framesize=21 varmemsize=10
 
 clean:
 	rm myshell; rm *.o
