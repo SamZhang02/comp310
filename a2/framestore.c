@@ -144,10 +144,13 @@ int load_multiple_files(FILE **fpp1, FILE **fpp2, FILE **fpp3, int pid1,
 
   for (int page_num = 0; page_num < 2; page_num++) {
     for (int i = 0; i < 3; i++) {
-      FILE **fpp = files[i];
 
-      if (fpp == NULL)
+      bool has_file = pids[i] != -1;
+      if (!has_file) {
         continue;
+      }
+
+      FILE **fpp = files[i];
 
       // make a copy of the file
       char destinationPath[1024];
