@@ -83,37 +83,21 @@ int load_file(FILE *sourcefile, char *filename, int pid) {
   int counter = 0;
   char *page_lines[3] = {};
 
-  while (fgets(buffer, sizeof(buffer), fp) != NULL) {
-    page_lines[counter] = malloc(sizeof(buffer));
-    strcpy(page_lines[counter], buffer);
-    counter++;
-
-    if (counter < 3)
-      continue;
-
-    // at every 3 lines, make a page and load it into the framestore
-    int free_space_index = get_free_page_space();
-    set_page(framestore[free_space_index], pid, page_lines);
-
-    for (int i = 0; i < 3; i++)
-      // reset the 3 item array that stores the lines while the file is being
-      // traversed
-      for (int i = 0; i < 3; i++) {
-        page_lines[i] = NULL;
-      }
-    counter = 0;
+  for (int i = 0; i < 3 && fgets(buffer, sizeof(buffer), fp) != NULL; i++) {
+    page_lines[i] = malloc(sizeof(buffer));
+    strcpy(page_lines[i], buffer);
   }
 
-  // if there were some lines loaded, but less than 3
-  if (page_lines[0] != NULL) {
-    for (int i = 0; i < 3; i++) {
-      if (page_lines[i] == NULL)
-        page_lines[i] = "none";
-    }
-
-    int free_space_index = get_free_page_space();
-    set_page(framestore[free_space_index], pid, page_lines);
+  // if some lines were not filled, set them to "none" string as per previous
+  // code's convention
+  for (int i = 0; i < 3; i++) {
+    if (page_lines[i] == NULL)
+      page_lines[i] = "none";
   }
+
+  // load it into the framestore
+  int free_space_index = get_free_page_space();
+  set_page(framestore[free_space_index], pid, page_lines);
 
   fclose(fp);
 
