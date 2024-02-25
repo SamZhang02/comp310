@@ -27,7 +27,7 @@ void framestore_init() {
 int get_free_page_space() {
 
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
-    if (framestore[i]->available == true)
+    if (framestore[i]->available)
       return i;
   };
 
@@ -50,8 +50,9 @@ void print_framestore() {
       count_empty++;
     } else {
       Page *page = framestore[i];
-      printf("\npage at index %d: \t\t pid: %d\t\tis_availible: %d\n \t\t ", i,
-             page->pid, page->available);
+      printf("\npage at index %d: \t\t page number: %d \t\t pid: "
+             "%d\t\tis_availible: %d\n \t\t ",
+             i, page->page_number, page->pid, page->available);
     }
   }
   printf("\n\t%d pages in total, %d pages in use, %d pages free\n\n",
@@ -64,7 +65,7 @@ void print_framestore() {
  * and load it to the first free space in the framestore.
  * part 2: load only 3 lines at a time
  */
-int load_file(FILE *sourcefile, char *filename, int pid) {
+int load_file(FILE **fpp, char *filename, int pid) {
 
   // make a copy of the file
   char destinationPath[1024];
@@ -73,27 +74,28 @@ int load_file(FILE *sourcefile, char *filename, int pid) {
   FILE *destFile = fopen(destinationPath, "wb");
   if (destFile == NULL) {
     perror("Error opening destination file");
-    fclose(sourcefile);
+    fclose(*fpp);
     exit(EXIT_FAILURE);
   }
 
   char buffer[4096];
   size_t bytesRead;
-  while ((bytesRead = fread(buffer, 1, sizeof(buffer), sourcefile)) > 0) {
+  while ((bytesRead = fread(buffer, 1, sizeof(buffer), *fpp)) > 0) {
     fwrite(buffer, 1, bytesRead, destFile);
   }
 
-  fclose(sourcefile);
+  fclose(*fpp);
   fclose(destFile);
 
-  FILE *fp = fopen(destinationPath, "r");
+  // redirect the given file pointer to the backing store and load 2 pages
+  *fpp = fopen(destinationPath, "r");
   int counter = 0;
   char *page_lines[3] = {"none", "none", "none"};
 
-  for (int j = 0; j < 2; j++) {
+  for (int page_num = 0; page_num < 2; page_num++) {
     bool new_lines_were_read = false;
 
-    for (int i = 0; i < 3 && fgets(buffer, sizeof(buffer), fp) != NULL; i++) {
+    for (int i = 0; i < 3 && fgets(buffer, sizeof(buffer), *fpp) != NULL; i++) {
       page_lines[i] = malloc(sizeof(buffer));
       strcpy(page_lines[i], buffer);
 
@@ -105,7 +107,7 @@ int load_file(FILE *sourcefile, char *filename, int pid) {
 
     // load it into the framestore
     int free_space_index = get_free_page_space();
-    set_page(framestore[free_space_index], pid, page_lines);
+    set_page(framestore[free_space_index], page_num, pid, page_lines);
 
     // clear the page_lines buffer
     for (int i = 0; i < 3; i++) {
@@ -113,7 +115,7 @@ int load_file(FILE *sourcefile, char *filename, int pid) {
     }
   }
 
-  fclose(fp);
+  // don't close fp because we will keep it in the pcb
 
 #ifdef DEBUG
   print_framestore();

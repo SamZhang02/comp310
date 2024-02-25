@@ -10,14 +10,14 @@ int pid_counter = 1;
 
 int generatePID() { return pid_counter++; }
 
-PCB *makePCB(int *pagetable, int num_pages, int job_length_score, FILE *fp,
-             long file_position) {
+PCB *makePCB(int pid, int *pagetable, int num_pages, int job_length_score,
+             FILE *fp) {
   PCB *newPCB = malloc(sizeof(PCB));
   if (newPCB == NULL) {
     return NULL;
   }
 
-  newPCB->pid = generatePID();
+  newPCB->pid = pid;
   newPCB->job_length_score = job_length_score;
   newPCB->priority = false;
 
@@ -27,8 +27,6 @@ PCB *makePCB(int *pagetable, int num_pages, int job_length_score, FILE *fp,
   newPCB->curr_line = 0;
 
   newPCB->fp = fp;
-  newPCB->file_position = file_position;
-  newPCB->file_is_done = false;
 
   return newPCB;
 }
@@ -38,21 +36,17 @@ PCB *makePCB(int *pagetable, int num_pages, int job_length_score, FILE *fp,
  * Return true if a page was fetched, if end of file was reached, return false
  */
 bool fetch_a_page(PCB *self) {
-  fseek(self->fp, self->file_position, SEEK_SET);
-
-  Page *page;
-  init_page(page);
-
   char buffer[1024];
   char *page_lines[3] = {};
 
+  bool new_lines_were_read = false;
   for (int i = 0; i < 3 && fgets(buffer, sizeof(buffer), self->fp) != NULL;
        i++) {
     page_lines[i] = malloc(sizeof(buffer));
     strcpy(page_lines[i], buffer);
-  }
 
-  bool new_lines_were_read = page_lines[0] != NULL;
+    new_lines_were_read = true;
+  }
 
   // if we are out of lines, return false
   if (!new_lines_were_read) {
@@ -66,10 +60,14 @@ bool fetch_a_page(PCB *self) {
   }
 
   int free_space_index = get_free_page_space();
-  set_page(get_page_from_framestore(free_space_index), self->pid, page_lines);
+  set_page(get_page_from_framestore(free_space_index), self->curr_page,
+           self->pid, page_lines);
 
-  self->file_position = ftell(self->fp);
+  // update pcb metadata
   self->pagetable = get_page_table(self->pid);
+  self->num_pages++;
+
+  print_framestore();
 
   return true;
 }
