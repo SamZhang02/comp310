@@ -1,14 +1,14 @@
 CC=gcc
-CFLAGS=
+CFLAGS = -D FRAMESIZE=$(framesize) -D VARMEMSIZE=$(varmemsize)
 SOURCES = shell.c interpreter.c shellmemory.c kernel.c pcb.c ready_queue.c page.c framestore.c
 OBJECTS = $(SOURCES:.c=.o)
 
 myshell: $(SOURCES)
-	$(CC) $(CFLAGS) -D FRAMESIZE=$(framesize) -D VARMEMSIZE=$(varmemsize) -c -g $(SOURCES)
+	$(CC) $(CFLAGS) -c -g $(SOURCES)
 	$(CC) $(CFLAGS) -o myshell $(OBJECTS)
 
 debug-shell: $(SOURCES)
-	$(CC) $(CFLAGS) -D FRAMESIZE=$(framesize) -D VARMEMSIZE=$(varmemsize) -DDEBUG -c -g $(SOURCES)
+	$(CC) $(CFLAGS) -DDEBUG -c -g $(SOURCES)
 	$(CC) $(CFLAGS) -g -o myshell $(OBJECTS)
 
 debug:

@@ -1,6 +1,13 @@
 #ifndef FRAMESTORE_H
 #define FRAMESTORE_H
 
+// default framesize value so my lsp doesn't give me errors
+#ifndef FRAMESIZE
+#define FRAMESIZE 0
+#endif
+
+#define FRAMESTORE_LENGTH FRAMESIZE / 3
+
 #include "page.h"
 #include "pcb.h"
 #include <stdbool.h>

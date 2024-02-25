@@ -1,12 +1,8 @@
-#include "page.h"
+#include "shellmemory.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define SHELL_MEM_LENGTH 1000
-#define NUM_PAGES 500
-#define LINES_PER_PAGE 3
 
 struct memory_struct {
   char *var;

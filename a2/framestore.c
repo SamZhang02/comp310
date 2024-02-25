@@ -1,10 +1,9 @@
+#include "framestore.h"
 #include "page.h"
 #include "pcb.h"
 #include "shell.h"
 #include <stdbool.h>
 #include <string.h>
-
-#define FRAMESTORE_LENGTH 100
 
 // singleton page array
 Page *framestore[FRAMESTORE_LENGTH];
