@@ -35,6 +35,11 @@ int get_free_page_space() {
 }
 
 /*
+ * Getting function to get a page from the framestore
+ */
+Page *get_page_from_framestore(int i) { return framestore[i]; }
+
+/*
  * Print all the pages taken, their pid.
  * For debugging purposes
  */
@@ -57,6 +62,7 @@ void print_framestore() {
  * Load the file into the framestore.
  * In chunks of 3 lines, construct a page containing the 3 lines,
  * and load it to the first free space in the framestore.
+ * part 2: load only 3 lines at a time
  */
 int load_file(FILE *sourcefile, char *filename, int pid) {
 
