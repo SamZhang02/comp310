@@ -1,9 +1,16 @@
 #include "framestore.h"
+#include "lru.h"
 #include "page.h"
 #include "pcb.h"
+#include "ready_queue.h"
 #include "shell.h"
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+#define EVICTION_MSG_START "Page fault! Victim page contents:"
+#define EVICTION_MSG_END "End of victim page contents."
 
 // singleton page array
 Page *framestore[FRAMESTORE_LENGTH];
@@ -49,9 +56,9 @@ void print_framestore() {
       count_empty++;
     } else {
       Page *page = framestore[i];
-      printf("\npage at index %d: \t\t page number: %d \t\t pid: "
-             "%d\t\tis_availible: %d\n \t\t ",
-             i, page->page_number, page->pid, page->available);
+      printf("\nindex %d: \t page number: %d \t\t pid: "
+             "%d\t\tis_availible: %d\n \t\t last used: %d",
+             i, page->page_number, page->pid, page->available, page->last_used);
     }
   }
   printf("\n\t%d pages in total, %d pages in use, %d pages free\n\n",
@@ -64,7 +71,7 @@ void print_framestore() {
  * and load it to the first free space in the framestore.
  * as per part 2 of the assignment: load only 3 lines at a time, twice.
  */
-int load_file(FILE **fpp, char *filename, int pid) {
+int load_file(FILE **fpp, int pid) {
 
   // make a copy of the file
   char destinationPath[1024];
@@ -106,7 +113,8 @@ int load_file(FILE **fpp, char *filename, int pid) {
 
     // load it into the framestore
     int free_space_index = get_free_page_space();
-    set_page(framestore[free_space_index], page_num, pid, page_lines);
+    set_page(framestore[free_space_index], page_num, pid, page_lines,
+             increment_timer());
 
     // clear the page_lines buffer
     for (int i = 0; i < 3; i++) {
@@ -117,12 +125,91 @@ int load_file(FILE **fpp, char *filename, int pid) {
   // don't close fp because we will keep it in the pcb
 
 #ifdef DEBUG
+  printf("%s\n", "just loaded a new file");
   print_framestore();
 #endif
 
   return 0;
 }
 
+/*
+ * Concurrently load multiple file into the framestore.
+ * Use this
+ */
+int load_multiple_files(FILE **fpp1, FILE **fpp2, FILE **fpp3, int pid1,
+                        int pid2, int pid3) {
+
+  FILE **files[] = {fpp1, fpp2, fpp3};
+  int pids[] = {pid1, pid2, pid3};
+
+  for (int page_num = 0; page_num < 2; page_num++) {
+    for (int i = 0; i < 3; i++) {
+
+      bool has_file = pids[i] != -1;
+      if (!has_file) {
+        continue;
+      }
+
+      FILE **fpp = files[i];
+
+      // make a copy of the file
+      char destinationPath[1024];
+      sprintf(destinationPath, "%s/%d", BACKING_STORE_PATH, pids[i]);
+
+      FILE *destFile = fopen(destinationPath, "wb");
+      if (destFile == NULL) {
+        perror("Error opening destination file");
+        fclose(*fpp);
+        exit(EXIT_FAILURE);
+      }
+
+      char buffer[4096];
+      size_t bytesRead;
+      while ((bytesRead = fread(buffer, 1, sizeof(buffer), *fpp)) > 0) {
+        fwrite(buffer, 1, bytesRead, destFile);
+      }
+
+      fclose(*fpp);
+      fclose(destFile);
+
+      // redirect the given file pointer to the backing store and load 2 pages
+      *fpp = fopen(destinationPath, "r");
+      int counter = 0;
+      char *page_lines[3] = {"none", "none", "none"};
+
+      bool new_lines_were_read = false;
+
+      for (int i = 0; i < 3 && fgets(buffer, sizeof(buffer), *fpp) != NULL;
+           i++) {
+        page_lines[i] = malloc(sizeof(buffer));
+        strcpy(page_lines[i], buffer);
+        new_lines_were_read = true;
+      }
+
+      if (!new_lines_were_read) {
+        continue;
+      }
+
+      // load it into the framestore
+      int free_space_index = get_free_page_space();
+      set_page(framestore[free_space_index], page_num, pids[i], page_lines,
+               get_curr_time());
+
+      // clear the page_lines buffer
+      for (int i = 0; i < 3; i++) {
+        page_lines[i] = "none";
+      }
+    }
+
+    increment_timer();
+  }
+
+  return 0;
+}
+
+/*
+ * Get the number of pages with specific pid;
+ * */
 int get_num_pages(int pid) {
   int count = 0;
 
@@ -136,18 +223,32 @@ int get_num_pages(int pid) {
   return count;
 }
 
+/*
+ * Get the largest page number of some pid
+ * */
+int get_max_page(int pid) {
+  int max = -1;
+
+  for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
+    Page *page = framestore[i];
+    if (page->pid == pid && page->page_number > max) {
+      max = page->page_number;
+    }
+  }
+
+  return max;
+}
+
 // Given a program's pid, return the program's pagetable
 pagetable get_page_table(int pid) {
-  int count = get_num_pages(pid);
+  int num_pages = get_max_page(pid);
 
-  pagetable table = malloc(count * sizeof(int));
+  pagetable table = malloc(num_pages * sizeof(int));
 
-  int index = 0;
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
     Page *page = framestore[i];
     if (page->pid == pid) {
-      table[index] = i;
-      index++;
+      table[page->page_number] = i;
     }
   }
 
@@ -175,4 +276,55 @@ void clear_framestore() {
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
     init_page(framestore[i]);
   }
+}
+
+/*
+ * Find the victim page according to the page replacement policy.
+ * */
+int get_victim_page_index() {
+  // only LRU for now
+  int index;
+  int least_recent_timestamp = MAX_INT;
+
+  for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
+    if (framestore[i]->available == false &&
+        framestore[i]->last_used < least_recent_timestamp) {
+      index = i;
+      least_recent_timestamp = framestore[i]->last_used;
+    }
+  }
+
+  return index;
+}
+
+/*
+ * Evict page at index i and display the messages accordingly
+ * This essentially toggles the "available" bit to true, and that spot can be
+ * used for other pages.
+ *
+ * return the index of the now available page to avoid extra traversal.
+ * */
+
+int evict_page(int index) {
+  Page *page_to_evict = framestore[index];
+  page_to_evict->available = true;
+
+#ifdef DEBUG
+  printf("evicting page at index %d\n", index);
+#endif
+  printf("%s\n", EVICTION_MSG_START);
+
+  for (int i = 0; i < 3; i++) {
+    if (strcmp(page_to_evict->lines[i], "none") == 0) {
+      break;
+    }
+
+    // the stored lines already end with newlines,
+    // so we don't need it here
+    printf("%s", page_to_evict->lines[i]);
+  }
+
+  printf("%s\n", EVICTION_MSG_END);
+
+  return index;
 }

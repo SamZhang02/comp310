@@ -1,6 +1,8 @@
 #include "pcb.h"
 #include "framestore.h"
+#include "lru.h"
 #include "page.h"
+#include "ready_queue.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,20 +62,29 @@ bool fetch_a_page(PCB *self) {
   }
 
   int free_space_index = get_free_page_space();
-  if (free_space_index == -1) {
-    // placeholder for when out of space, we implement the replacement with the
-    // LRU cache later
-    perror("No more spaces in the framestore");
-    exit(1);
+
+  bool oom = free_space_index == -1;
+  if (oom) {
+    free_space_index = evict_page(get_victim_page_index());
   }
+
   set_page(get_page_from_framestore(free_space_index), self->curr_page,
-           self->pid, page_lines);
+           self->pid, page_lines, increment_timer());
 
   // update pcb metadata
-  self->pagetable = get_page_table(self->pid);
+  pagetable new_table =
+      realloc(self->pagetable, (self->num_pages + 1) * sizeof(int));
+
+  new_table[self->num_pages] = free_space_index;
+  self->pagetable = new_table;
   self->num_pages++;
 
+#ifdef DEBUG
+  printf("%s\n", "just fetched a new page");
   print_framestore();
+  printf("%d\n", self->num_pages);
+  print_ready_queue();
+#endif
 
   return true;
 }
