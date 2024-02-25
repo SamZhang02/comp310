@@ -63,7 +63,6 @@ void print_ready_queue() {
 
 void terminate_process(QueueNode *node) {
   // node should not be in the ready queue
-  free_process_pages(node->pcb->pid);
   free(node);
 }
 

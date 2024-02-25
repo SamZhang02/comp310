@@ -4,7 +4,6 @@
 #include "pcb.h"
 #include "ready_queue.h"
 #include "shell.h"
-#include "shellmemory.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,7 +24,7 @@ int process_initialize(char *filename) {
 
   int pid = generatePID();
 
-  int error_code = load_file(fp, filename, pid);
+  int error_code = load_file(&fp, filename, pid);
   if (error_code != 0) {
     fclose(fp);
     return FILE_ERROR;
@@ -34,7 +33,7 @@ int process_initialize(char *filename) {
   pagetable pagetable = get_page_table(pid);
   int num_pages = get_num_pages(pid);
 
-  PCB *newPCB = makePCB(pagetable, num_pages, 100);
+  PCB *newPCB = makePCB(pid, pagetable, num_pages, 100, fp);
   QueueNode *node = malloc(sizeof(QueueNode));
   node->pcb = newPCB;
 
@@ -43,6 +42,7 @@ int process_initialize(char *filename) {
   return 0;
 }
 
+// From starter code:
 // Note that "You can assume that the # option will only be used in batch
 // mode." So we know that the input is a file, we can directly load the file
 // into ram
@@ -50,7 +50,7 @@ int shell_process_initialize() {
   int error_code = 0;
 
   int pid = generatePID();
-  error_code = load_file(stdin, "_SHELL", pid);
+  error_code = load_file(&stdin, "_SHELL", pid);
   if (error_code != 0) {
     return error_code;
   }
@@ -58,7 +58,7 @@ int shell_process_initialize() {
   pagetable pagetable = get_page_table(pid);
   int num_pages = get_num_pages(pid);
 
-  PCB *newPCB = makePCB(pagetable, num_pages, 100);
+  PCB *newPCB = makePCB(pid, pagetable, num_pages, 100, stdin);
 
   newPCB->priority = true;
   QueueNode *node = malloc(sizeof(QueueNode));
@@ -74,8 +74,23 @@ bool execute_process(QueueNode *node, int quanta) {
   char *line = NULL;
   PCB *pcb = node->pcb;
   for (int i = 0; i < quanta; i++) {
+    bool page_fault = pcb->curr_page >= pcb->num_pages;
+
+    if (page_fault) {
+      bool page_was_fetched = fetch_a_page(pcb);
+
+      if (page_was_fetched == false) {
+        terminate_process(node);
+        return true;
+      } else {
+        ready_queue_add_to_head(node);
+        return false;
+      }
+    }
+
     int page_num = pcb->pagetable[pcb->curr_page];
     int line_num = pcb->curr_line;
+
     line = get_line(page_num, line_num);
 
     in_background = true;
@@ -99,13 +114,6 @@ bool execute_process(QueueNode *node, int quanta) {
       pcb->curr_page++;
     } else {
       pcb->curr_line++;
-    }
-
-    // if we exceed bound for the current page, that means the program is done
-    if (pcb->curr_page >= pcb->num_pages) {
-      terminate_process(node);
-      in_background = false;
-      return true;
     }
   }
 

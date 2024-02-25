@@ -1,12 +1,8 @@
-#include "page.h"
+#include "shellmemory.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define SHELL_MEM_LENGTH 1000
-#define NUM_PAGES 500
-#define LINES_PER_PAGE 3
 
 struct memory_struct {
   char *var;
@@ -44,7 +40,7 @@ char *extract(char *model) {
 
 void mem_init() {
   int i;
-  for (i = 0; i < 1000; i++) {
+  for (i = 0; i < SHELL_MEM_LENGTH; i++) {
     varmemory[i].var = "none";
     varmemory[i].value = "none";
   }
@@ -53,7 +49,7 @@ void mem_init() {
 // Set key value pair
 void mem_set_value(char *var_in, char *value_in) {
   int i;
-  for (i = 0; i < 1000; i++) {
+  for (i = 0; i < SHELL_MEM_LENGTH; i++) {
     if (strcmp(varmemory[i].var, var_in) == 0) {
       varmemory[i].value = strdup(value_in);
       return;
@@ -61,7 +57,7 @@ void mem_set_value(char *var_in, char *value_in) {
   }
 
   // Value does not exist, need to find a free spot.
-  for (i = 0; i < 1000; i++) {
+  for (i = 0; i < SHELL_MEM_LENGTH; i++) {
     if (strcmp(varmemory[i].var, "none") == 0) {
       varmemory[i].var = strdup(var_in);
       varmemory[i].value = strdup(value_in);
@@ -75,7 +71,7 @@ void mem_set_value(char *var_in, char *value_in) {
 // get value based on input key
 char *mem_get_value(char *var_in) {
   int i;
-  for (i = 0; i < 1000; i++) {
+  for (i = 0; i < SHELL_MEM_LENGTH; i++) {
     if (strcmp(varmemory[i].var, var_in) == 0) {
       return strdup(varmemory[i].value);
     }

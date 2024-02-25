@@ -1,6 +1,7 @@
 #ifndef PCB_H
 #define PCB_H
 #include <stdbool.h>
+#include <stdio.h>
 
 /*
  * Struct:  PCB
@@ -20,10 +21,15 @@ typedef struct {
   int *pagetable;
   int num_pages;
   int job_length_score;
+  FILE *fp;           // we store the file pointer to continuously read from it
+  long file_position; // keep track of the current file position being read
+  bool file_is_done;
 } PCB;
 
 typedef int *pagetable;
 
 int generatePID();
-PCB *makePCB(int *pagetable, int num_pages, int job_length_score);
+PCB *makePCB(int pid, int *pagetable, int num_pages, int job_length_score,
+             FILE *fp);
+bool fetch_a_page(PCB *self);
 #endif

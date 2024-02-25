@@ -9,6 +9,7 @@
  */
 void init_page(Page *self) {
   self->pid = -1;
+  self->page_number = -1;
   self->available = true;
 
   for (int i = 0; i < 3; i++) {
@@ -26,8 +27,9 @@ void init_page(Page *self) {
 /*
  * set the values within the page, set the availability to false
  */
-void set_page(Page *self, int pid, char *lines[3]) {
+void set_page(Page *self, int page_number, int pid, char *lines[3]) {
   self->pid = pid;
+  self->page_number = page_number;
 
   for (int i = 0; i < 3; i++) {
     self->lines[i] = malloc(strlen(lines[i]) + 1);

@@ -1,8 +1,6 @@
 #include "shell.h"
 #include "framestore.h"
 #include "interpreter.h"
-#include "kernel.h"
-#include "pcb.h"
 #include "shellmemory.h"
 #include <dirent.h>
 #include <stdio.h>
@@ -61,7 +59,7 @@ int rm_rf(const char *path) {
   return r;
 }
 
-int create_backing_store() {
+void create_backing_store() {
 
   if (access(BACKING_STORE_PATH, F_OK) == 0) {
 
@@ -83,8 +81,8 @@ int main(int argc, char *argv[]) {
   create_backing_store();
 
   printf("%s", "Shell v2.0\n");
-  printf("Frame Store Size = %d; Variable Store Size = %d\n", FRAMESIZE,
-         VARMEMSIZE);
+  printf("Frame Store Size = %d; Variable Store Size = %d\n", FRAMESTORE_LENGTH,
+         SHELL_MEM_LENGTH);
 
   char prompt = '$';              // Shell prompt
   char userInput[MAX_USER_INPUT]; // user's input stored here
