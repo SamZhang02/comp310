@@ -63,7 +63,7 @@ void print_framestore() {
  * Load the file into the framestore.
  * In chunks of 3 lines, construct a page containing the 3 lines,
  * and load it to the first free space in the framestore.
- * part 2: load only 3 lines at a time
+ * as per part 2 of the assignment: load only 3 lines at a time, twice.
  */
 int load_file(FILE **fpp, char *filename, int pid) {
 
@@ -160,13 +160,13 @@ char *get_line(int page_index, int line_index) {
   return framestore[page_index]->lines[line_index];
 }
 
-// Free all pages with some pid
+// Set all pages of completed process to available
 void free_process_pages(int pid) {
 
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
     Page *page = framestore[i];
     if (page->pid == pid) {
-      free(page);
+      page->available = true;
     }
   }
 }
