@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
   create_backing_store();
 
   printf("%s", "Shell v2.0\n");
-  printf("Frame Store Size = %d; Variable Store Size = %d\n", FRAMESTORE_LENGTH,
+  printf("Frame Store Size = %d; Variable Store Size = %d\n", FRAMESTORE_LENGTH*3,
          SHELL_MEM_LENGTH);
 
   char prompt = '$';              // Shell prompt

@@ -6,7 +6,7 @@
 #define FRAMESIZE 0
 #endif
 
-#define FRAMESTORE_LENGTH FRAMESIZE / 3
+#define FRAMESTORE_LENGTH (FRAMESIZE / 3)
 
 #include "page.h"
 #include "pcb.h"
