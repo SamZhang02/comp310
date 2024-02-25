@@ -46,7 +46,7 @@ Page *get_page_from_framestore(int i) { return framestore[i]; }
 void print_framestore() {
   int count_empty = 0;
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
-    if (framestore[i]->pid == -1) {
+    if (framestore[i]->available) {
       count_empty++;
     } else {
       Page *page = framestore[i];
