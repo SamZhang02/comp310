@@ -170,12 +170,10 @@ pagetable get_page_table(int pid) {
 
   pagetable table = malloc(num_pages * sizeof(int));
 
-  int index = 0;
   for (int i = 0; i < FRAMESTORE_LENGTH; i++) {
     Page *page = framestore[i];
     if (page->pid == pid) {
       table[page->page_number] = i;
-      index++;
     }
   }
 
