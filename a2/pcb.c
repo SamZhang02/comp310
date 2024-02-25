@@ -74,7 +74,9 @@ bool fetch_a_page(PCB *self) {
   self->pagetable = get_page_table(self->pid);
   self->num_pages++;
 
+#ifdef DEBUG
   print_framestore();
+#endif
 
   return true;
 }
