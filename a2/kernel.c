@@ -83,8 +83,6 @@ bool execute_process(QueueNode *node, int quanta) {
         terminate_process(node);
         return true;
       } else {
-        // the program is still ongoing so we return false because the scheduler
-        // should line it back up for us
         ready_queue_add_to_head(node);
         return false;
       }

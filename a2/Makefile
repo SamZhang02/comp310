@@ -13,7 +13,7 @@ debug-shell: $(SOURCES)
 
 debug:
 	make clean
-	make debug-shell framesize=100 varmemsize=100
+	make debug-shell framesize=99 varmemsize=100
 
 clean:
 	rm myshell; rm *.o
@@ -26,6 +26,6 @@ docker:
 
 run:
 	make clean
-	make myshell framesize=100 varmemsize=100
+	make myshell framesize=99 varmemsize=100
 	./myshell
 
