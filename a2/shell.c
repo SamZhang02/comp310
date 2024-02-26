@@ -40,7 +40,7 @@ int rm_rf(const char *path) {
         if (!stat(buf, &statbuf)) {
           if (S_ISDIR(statbuf.st_mode)) {
             r2 = rm_rf(
-                buf); // recursively remove all items in the nested diretory
+                buf); // recursively remove all items in the nested diretorye=
           } else {
             r2 = unlink(buf); // remove non-directory file
           }

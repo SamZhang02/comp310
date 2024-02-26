@@ -124,34 +124,6 @@ int initialize_multiple_process(char *filename1, char *filename2,
   return 0;
 }
 
-// From starter code:
-// Note that "You can assume that the # option will only be used in batch
-// mode." So we know that the input is a file, we can directly load the file
-// into ram
-int shell_process_initialize() {
-  int error_code = 0;
-
-  int pid = generatePID();
-  error_code = load_file(&stdin, pid);
-  if (error_code != 0) {
-    return error_code;
-  }
-
-  pagetable pagetable = get_page_table(pid);
-  int num_pages = get_num_pages(pid);
-
-  PCB *newPCB = makePCB(pid, pagetable, num_pages, 100, stdin);
-
-  newPCB->priority = true;
-  QueueNode *node = malloc(sizeof(QueueNode));
-  node->pcb = newPCB;
-
-  ready_queue_add_to_head(node);
-
-  freopen("/dev/tty", "r", stdin);
-  return 0;
-}
-
 bool execute_process(QueueNode *node, int quanta) {
   char *line = NULL;
   PCB *pcb = node->pcb;
