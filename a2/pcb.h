@@ -29,7 +29,6 @@ typedef struct {
 typedef int *pagetable;
 
 int generatePID();
-PCB *makePCB(int pid, int *pagetable, int num_pages, int job_length_score,
-             FILE *fp);
+PCB *makePCB(int pid, int *pagetable, int num_pages, FILE *fp);
 bool fetch_a_page(PCB *self);
 #endif

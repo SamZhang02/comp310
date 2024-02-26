@@ -2,25 +2,29 @@
 #include "framestore.h"
 #include "lru.h"
 #include "page.h"
-#include "ready_queue.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+/*
+ * placeholder job length score because it is not releant to this assignment
+ * source: https://edstem.org/us/courses/52582/discussion/4371690
+ */
+#define JOB_LENGTH_SCORE_PLACEHOLDER 0
 
 // global pid counter
 int pid_counter = 1;
 
 int generatePID() { return pid_counter++; }
 
-PCB *makePCB(int pid, int *pagetable, int num_pages, int job_length_score,
-             FILE *fp) {
+PCB *makePCB(int pid, int *pagetable, int num_pages, FILE *fp) {
   PCB *newPCB = malloc(sizeof(PCB));
   if (newPCB == NULL) {
     return NULL;
   }
 
   newPCB->pid = pid;
-  newPCB->job_length_score = job_length_score;
+  newPCB->job_length_score = JOB_LENGTH_SCORE_PLACEHOLDER;
   newPCB->priority = false;
 
   newPCB->pagetable = pagetable;

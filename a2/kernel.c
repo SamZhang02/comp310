@@ -33,7 +33,7 @@ int process_initialize(char *filename) {
   pagetable pagetable = get_page_table(pid);
   int num_pages = get_num_pages(pid);
 
-  PCB *newPCB = makePCB(pid, pagetable, num_pages, 100, fp);
+  PCB *newPCB = makePCB(pid, pagetable, num_pages, fp);
   QueueNode *node = malloc(sizeof(QueueNode));
   node->pcb = newPCB;
 
@@ -92,7 +92,7 @@ int initialize_multiple_process(char *filename1, char *filename2,
     pagetable pagetable = get_page_table(pid1);
     int num_pages = get_num_pages(pid1);
 
-    PCB *newPCB = makePCB(pid1, pagetable, num_pages, 100, fp1);
+    PCB *newPCB = makePCB(pid1, pagetable, num_pages, fp1);
     QueueNode *node = malloc(sizeof(QueueNode));
     node->pcb = newPCB;
 
@@ -103,7 +103,7 @@ int initialize_multiple_process(char *filename1, char *filename2,
     pagetable pagetable = get_page_table(pid2);
     int num_pages = get_num_pages(pid2);
 
-    PCB *newPCB = makePCB(pid2, pagetable, num_pages, 100, fp2);
+    PCB *newPCB = makePCB(pid2, pagetable, num_pages, fp2);
     QueueNode *node = malloc(sizeof(QueueNode));
     node->pcb = newPCB;
 
@@ -114,7 +114,7 @@ int initialize_multiple_process(char *filename1, char *filename2,
     pagetable pagetable = get_page_table(pid3);
     int num_pages = get_num_pages(pid3);
 
-    PCB *newPCB = makePCB(pid3, pagetable, num_pages, 100, fp3);
+    PCB *newPCB = makePCB(pid3, pagetable, num_pages, fp3);
     QueueNode *node = malloc(sizeof(QueueNode));
     node->pcb = newPCB;
 
@@ -140,7 +140,7 @@ int shell_process_initialize() {
   pagetable pagetable = get_page_table(pid);
   int num_pages = get_num_pages(pid);
 
-  PCB *newPCB = makePCB(pid, pagetable, num_pages, 100, stdin);
+  PCB *newPCB = makePCB(pid, pagetable, num_pages, stdin);
 
   newPCB->priority = true;
   QueueNode *node = malloc(sizeof(QueueNode));
