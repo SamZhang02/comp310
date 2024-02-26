@@ -75,7 +75,7 @@ int load_file(FILE **fpp, int pid) {
 
   // make a copy of the file
   char destinationPath[1024];
-  sprintf(destinationPath, "%s/%d", BACKING_STORE_PATH, pid);
+  sprintf(destinationPath, "%s/%d", backing_store_path, pid);
 
   FILE *destFile = fopen(destinationPath, "wb");
   if (destFile == NULL) {
@@ -154,7 +154,7 @@ int load_multiple_files(FILE **fpp1, FILE **fpp2, FILE **fpp3, int pid1,
 
       // make a copy of the file
       char destinationPath[1024];
-      sprintf(destinationPath, "%s/%d", BACKING_STORE_PATH, pids[i]);
+      sprintf(destinationPath, "%s/%d", backing_store_path, pids[i]);
 
       FILE *destFile = fopen(destinationPath, "wb");
       if (destFile == NULL) {

@@ -9,6 +9,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+char backing_store_path[1024];
+
 int MAX_USER_INPUT = 1000;
 int parseInput(char ui[]);
 
@@ -61,23 +63,26 @@ int rm_rf(const char *path) {
 
 void create_backing_store() {
 
-  if (access(BACKING_STORE_PATH, F_OK) == 0) {
+  if (access(backing_store_path, F_OK) == 0) {
 
-    if (rm_rf(BACKING_STORE_PATH) != 0) {
+    if (removeBackingStore() != 0) {
       perror("Error removing directory");
       exit(EXIT_FAILURE);
     }
   }
 
-  if (mkdir(BACKING_STORE_PATH, 0777) != 0) {
+  if (mkdir(backing_store_path, 0777) != 0) {
     perror("Error creating directory");
     exit(EXIT_FAILURE);
   }
 };
 
-int removeBackingStore() { return rm_rf(BACKING_STORE_PATH); }
+int removeBackingStore() { return rm_rf(backing_store_path); }
 
 int main(int argc, char *argv[]) {
+  getcwd(backing_store_path, sizeof(backing_store_path));
+  strcat(backing_store_path, "/backing_store");
+
   create_backing_store();
 
   printf("%s", "Shell v2.0\n");
