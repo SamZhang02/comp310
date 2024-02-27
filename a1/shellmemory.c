@@ -12,6 +12,7 @@ struct memory_struct shellmemory[1000];
 // Helper functions
 int match(char *model, char *var) {
   int i, len = strlen(var), matchCount = 0;
+
   for (i = 0; i < len; i++)
     if (*(model + i) == *(var + i))
       matchCount++;
