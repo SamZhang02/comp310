@@ -1,6 +1,8 @@
 #include "kernel.h"
 #include "framestore.h"
 #include "interpreter.h"
+#include "lru.h"
+#include "page.h"
 #include "pcb.h"
 #include "ready_queue.h"
 #include "shell.h"
@@ -157,6 +159,9 @@ bool execute_process(QueueNode *node, int quanta) {
     int line_num = pcb->curr_line;
 
     line = get_line(page_num, line_num);
+    // we just used that page, so we update its timestamp
+    update_page_timestamp(get_page_from_framestore(page_num),
+                          increment_timer());
 
     in_background = true;
 

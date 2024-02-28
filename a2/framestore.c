@@ -257,7 +257,6 @@ pagetable get_page_table(int pid) {
 
 // Returns line of code from the page at page_index and the line at line_index
 char *get_line(int page_index, int line_index) {
-  framestore[page_index]->last_used = increment_timer();
   return framestore[page_index]->lines[line_index];
 }
 
