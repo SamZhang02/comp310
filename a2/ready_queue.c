@@ -1,5 +1,4 @@
 #include "ready_queue.h"
-#include "framestore.h"
 #include "kernel.h"
 #include "pcb.h"
 #include <stdbool.h>
@@ -63,6 +62,7 @@ void print_ready_queue() {
 
 void terminate_process(QueueNode *node) {
   // node should not be in the ready queue
+  free_PCB(node->pcb);
   free(node);
 }
 

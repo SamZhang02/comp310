@@ -38,6 +38,15 @@ PCB *makePCB(int pid, int *pagetable, int num_pages, FILE *fp) {
 }
 
 /*
+ * Method to free the PCB and its components
+ */
+void free_PCB(PCB *self) {
+  free(self->pagetable);
+  fclose(self->fp);
+  free(self);
+}
+
+/*
  * Fetch a new page in the file, update the pagetable
  * Return true if a page was fetched, if end of file was reached, return false
  */
@@ -54,7 +63,8 @@ bool fetch_a_page(PCB *self) {
     new_lines_were_read = true;
   }
 
-  // if we are out of lines, return false
+  // if we didn't read in any new lines, the file is done and nothing was
+  // fetched
   if (!new_lines_were_read) {
     return false;
   }
@@ -67,11 +77,14 @@ bool fetch_a_page(PCB *self) {
 
   int free_space_index = get_free_page_space();
 
-  bool oom = free_space_index == -1;
-  if (oom) {
-    free_space_index = evict_page(get_victim_page_index());
+  bool out_of_memory = free_space_index == -1;
+  if (out_of_memory) {
+    int victim_index = get_victim_page_index();
+    free_space_index = evict_page(victim_index);
+    self->pagetable[victim_index] = -1;
   }
 
+  // set the respective page in the framestore to its new lines
   set_page(get_page_from_framestore(free_space_index), self->curr_page,
            self->pid, page_lines, increment_timer());
 
