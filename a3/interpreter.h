@@ -1,0 +1,23 @@
+#ifndef INTERPRETER_H
+#define INTERPRETER_H
+
+enum Error {
+  FILE_DOES_NOT_EXIST,
+  NO_MEM_SPACE,
+  READY_QUEUE_FULL,
+  SCHEDULING_ERROR,
+  TOO_MANY_TOKENS,
+  TOO_FEW_TOKENS,
+  NON_ALPHANUMERIC_TOKEN,
+  BAD_COMMAND,
+  ERROR_RM,
+  FILE_CREATION_ERROR,
+  FILESYSTEM_ERROR,
+  FILE_WRITE_ERROR,
+  FILE_READ_ERROR,
+};
+
+int interpreter(char *command_args[], int args_size, char *cwd);
+int help();
+
+#endif
