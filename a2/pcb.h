@@ -28,5 +28,6 @@ typedef int *pagetable;
 
 int generatePID();
 PCB *makePCB(int pid, int *pagetable, int num_pages, FILE *fp);
+void free_PCB(PCB *self);
 bool fetch_a_page(PCB *self);
 #endif

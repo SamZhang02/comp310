@@ -1,6 +1,8 @@
 #include "kernel.h"
 #include "framestore.h"
 #include "interpreter.h"
+#include "lru.h"
+#include "page.h"
 #include "pcb.h"
 #include "ready_queue.h"
 #include "shell.h"
@@ -22,6 +24,8 @@ int process_initialize(char *filename) {
     return FILE_DOES_NOT_EXIST;
   }
 
+  // This pid will be used as the process identifier throughout the entire time
+  // the process exists
   int pid = generatePID();
 
   int error_code = load_file(&fp, pid);
@@ -42,6 +46,15 @@ int process_initialize(char *filename) {
   return 0;
 }
 
+/*
+ * Concurrently load multiple processes. Test 5 appeared to infer that the order
+ * of last used timestamp is
+ * prog1-page1
+ * prog2-page1
+ * prog1-page2
+ * prog2-page2
+ * ...
+ */
 int initialize_multiple_process(char *filename1, char *filename2,
                                 char *filename3) {
 
@@ -146,6 +159,9 @@ bool execute_process(QueueNode *node, int quanta) {
     int line_num = pcb->curr_line;
 
     line = get_line(page_num, line_num);
+    // we just used that page, so we update its timestamp
+    update_page_timestamp(get_page_from_framestore(page_num),
+                          increment_timer());
 
     in_background = true;
 
@@ -188,7 +204,9 @@ void *scheduler_FCFS() {
     cur = ready_queue_pop_head();
     bool process_done = execute_process(cur, MAX_INT);
     if (!process_done) {
-      ready_queue_add_to_tail(cur);
+      // Since its FCFS, we want to continuously execute this
+      // until it's done
+      ready_queue_add_to_head(cur);
     }
   }
 

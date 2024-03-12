@@ -17,5 +17,5 @@ typedef struct {
 void init_page(Page *self);
 void set_page(Page *self, int page_number, int pid, char *lines[3],
               int timestamp);
-
+void update_page_timestamp(Page *self, int timestamp);
 #endif // PAGE_H

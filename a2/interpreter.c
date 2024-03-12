@@ -64,7 +64,6 @@ int interpreter(char *command_args[], int args_size) {
              strcmp(command_args[0], "exit") == 0) { // quit
     if (args_size > 1)
       return handle_error(TOO_MANY_TOKENS);
-    // TODO
     return quit();
   } else if (strcmp(command_args[0], "set") == 0) { // set
     if (args_size < 3)
