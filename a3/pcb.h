@@ -1,6 +1,8 @@
 #ifndef PCB_H
 #define PCB_H
 
+#include <stdio.h>
+
 typedef struct PCB PCB;
 typedef struct PAGE PAGE;
 
