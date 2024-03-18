@@ -1,5 +1,0 @@
-echo helloP2
-set y 20
-echo $y
-print y
-echo byeP2
