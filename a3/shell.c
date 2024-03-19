@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
   system("rm -rf backing_store");
   system("mkdir backing_store");
 
-  printf("%s\n", "Shell v2.0");
+  printf("%s\n", "Shell v2.1");
 
   char var_size_str1[256] = "; Variable Store Size = ";
   char var_size_str2[20];

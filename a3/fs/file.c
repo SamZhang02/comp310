@@ -128,10 +128,12 @@ offset_t file_read_at(struct file *file, void *buffer, offset_t size,
    which may be less than SIZE if end of file is reached.
    (Normally we'd grow the file in that case, but file growth is
    not yet implemented.)
-   Advances FILE's position by the number of bytes read. */
+   Advances FILE's position by the number of bytes read.
+   Sets the final character of the buffer to the null terminator. */
 offset_t file_write(struct file *file, const void *buffer, offset_t size) {
+  ((char *)buffer)[size - 1] = '\0';
   offset_t bytes_written = inode_write_at(file->inode, buffer, size, file->pos);
-  file->pos += bytes_written;
+  file->pos += bytes_written - 2;
   return bytes_written;
 }
 

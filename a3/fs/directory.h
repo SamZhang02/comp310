@@ -15,6 +15,7 @@ struct inode;
 struct dir {
   struct inode *inode; /* Backing store. */
   offset_t pos;        /* Current position. */
+  int open_cnt;           /* Number of openers. */
 };
 
 /* A single directory entry. */

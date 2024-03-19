@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "pcb.h"
+#include "shell.h"
 #include "shellmemory.h"
 
 int count_lines(const char *script);
@@ -229,4 +230,5 @@ int PCB_done(PCB *pcb) {
     }
   }
   return 1;
+
 }

@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "fs/block.h"
 #include "fs/filesys.h"
 #include "fs/fsutil.h"
 #include "fs/fsutil2.h"
@@ -250,7 +251,7 @@ int interpreter(char *command_args[], int args_size, char *cwd) {
     for (int i = 1; i < args_size; i++) {
       size += strlen(command_args[i]);
     }
-    size += (args_size - 1);
+    size += args_size;
     char *buf = malloc(size * sizeof(char));
     memset(buf, 0, size);
     int current_ind = 0;
@@ -283,12 +284,18 @@ int interpreter(char *command_args[], int args_size, char *cwd) {
     if (args_size != 2)
       return handle_error(TOO_MANY_TOKENS);
 
-    return copy_in(command_args[1]);
+    int status = copy_in(command_args[1]);
+    if (status != 0)
+      return handle_error(status);
+    return 0;
   } else if (strcmp(command_args[0], "copy_out") == 0) {
     if (args_size != 2)
       return handle_error(TOO_MANY_TOKENS);
 
-    return copy_out(command_args[1]);
+    int status = copy_out(command_args[1]);
+    if (status != 0)
+      return handle_error(status);
+    return 0;
   } else if (strcmp(command_args[0], "size") == 0) { // rm
     if (args_size != 2)
       return handle_error(TOO_MANY_TOKENS);
@@ -311,7 +318,8 @@ int interpreter(char *command_args[], int args_size, char *cwd) {
     if (args_size != 1)
       return handle_error(TOO_MANY_TOKENS);
     int free_space = fsutil_freespace();
-    printf("Free space: %d\n", free_space);
+    printf("Num free sectors: %d (%d total bytes)\n", free_space,
+           free_space * BLOCK_SECTOR_SIZE);
     return 0;
   } else if (strcmp(command_args[0], "fragmentation_degree") == 0) { // rm
     if (args_size != 1)
