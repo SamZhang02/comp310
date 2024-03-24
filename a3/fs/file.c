@@ -53,7 +53,9 @@ bool remove_from_file_table(char *fname) {
   return false;
 }
 
-/* return file object crossponding to given filename */
+/* return file object crossponding to given filename
+ * form the file_table
+ */
 struct file *get_file_by_fname(char *fname) {
   struct list_elem *e = list_begin(&file_table);
   struct file_table_entry *entry;

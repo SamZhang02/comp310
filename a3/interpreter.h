@@ -15,8 +15,10 @@ enum Error {
   FILESYSTEM_ERROR,
   FILE_WRITE_ERROR,
   FILE_READ_ERROR,
+  EXTERNAL_FILE_READ_ERROR
 };
 
+int handle_error(enum Error error_code);
 int interpreter(char *command_args[], int args_size, char *cwd);
 int help();
 
