@@ -21,6 +21,10 @@ build-docker:
 	docker build . -t 310 -f Dockerfile
 
 docker:
-	docker run --rm -it --mount type=bind,source=.,target=/code --entrypoint /bin/bash -w /code gcc:13.2
+	docker run --rm -it --mount type=bind,source=.,target=/code --entrypoint /bin/bash -w /code 310
+
+run:
+	make myshell framesize=999 varmemsize=999 
+	./myshell blank.dsk -f
 
 
