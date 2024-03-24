@@ -26,21 +26,20 @@ int print(char *var);
 int run(const char *script, char *cwd);
 int exec(char *scripts[], int size, const char *policy, char *cwd);
 
-char *error_msgs[] = {
-    "file does not exist",
-    "no space left in shell memory",
-    "ready queue is full",
-    "scheduling policy error",
-    "too many tokens",
-    "too few tokens",
-    "non-alphanumeric token",
-    "unknown name",
-    "rm",
-    "file could not be created",
-    "bad filesystem",
-    "file could not be written (maybe no space?)",
-    "file could not be read",
-};
+char *error_msgs[] = {"file does not exist",
+                      "no space left in shell memory",
+                      "ready queue is full",
+                      "scheduling policy error",
+                      "too many tokens",
+                      "too few tokens",
+                      "non-alphanumeric token",
+                      "unknown name",
+                      "rm",
+                      "file could not be created",
+                      "bad filesystem",
+                      "file could not be written (maybe no space?)",
+                      "file could not be read",
+                      "error reading external files"};
 
 int handle_error(enum Error error_code) {
   printf("Bad command: %s\n", error_msgs[error_code]);
