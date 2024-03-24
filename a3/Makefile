@@ -23,8 +23,8 @@ build-docker:
 docker:
 	docker run --rm -it --mount type=bind,source=.,target=/code --entrypoint /bin/bash -w /code 310
 
-run:
+# run with a clean and empty disk
+run-clean:
 	make myshell framesize=999 varmemsize=999 
-	./myshell blank.dsk -f
-
-
+	cp clean_disks/blank.dsk ./clean.dsk
+	./myshell ./clean.dsk -f
