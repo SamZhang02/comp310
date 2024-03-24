@@ -44,6 +44,7 @@ int copy_in(char *fname) {
     buffer[buffer_i] = c;
   }
 
+  // TODO : if it doesnt fit it should create a smaller one instead
   if (!fsutil_create(fname, bufsize)) {
     return FILE_CREATION_ERROR;
   }
@@ -92,8 +93,30 @@ int copy_out(char *fname) {
 }
 
 void find_file(char *pattern) {
-  // TODO
-  return;
+  struct dir *dir;
+  char name[NAME_MAX + 1];
+
+  dir = dir_open_root();
+
+  while (dir_readdir(dir, name)) {
+    struct file *f = filesys_open(name);
+    int bufsize = file_length(f);
+    char *buffer = malloc(bufsize);
+
+    file_seek(f, 0);
+    file_read(f, buffer, bufsize);
+    file_seek(f, 0);
+
+    bool pattern_is_in_file = strstr(buffer, pattern);
+
+    if (pattern_is_in_file) {
+      printf("%s\n", name);
+    }
+
+    free(buffer);
+  }
+
+  dir_close(dir);
 }
 
 void fragmentation_degree() {

@@ -28,3 +28,13 @@ run-clean:
 	make myshell framesize=999 varmemsize=999 
 	cp clean_disks/blank.dsk ./clean.dsk
 	./myshell ./clean.dsk -f
+
+# run with a new tswfit dsk
+run-tswift:
+	make myshell framesize=999 varmemsize=999 
+	cp clean_disks/tswift.dsk ./tswift.dsk
+	./myshell ./tswift.dsk 
+
+tswift:
+	make myshell framesize=999 varmemsize=999 
+	cp clean_disks/tswift.dsk ./tswift.dsk
