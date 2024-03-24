@@ -120,7 +120,31 @@ void find_file(char *pattern) {
 }
 
 void fragmentation_degree() {
-  // TODO
+  int num_fragmentable = 0;
+  int num_fragmented = 0;
+
+  struct dir *dir;
+  char name[NAME_MAX + 1];
+  dir = dir_open_root();
+
+  while (dir_readdir(dir, name)) {
+    struct file *f = filesys_open(name);
+    offset_t file_length = f->inode->data.length;
+    size_t num_sectors = bytes_to_sectors(file_length);
+
+    if (num_sectors > 1) {
+      num_fragmentable++;
+    }
+
+    block_sector_t *data_sectors = get_inode_data_sectors(f->inode);
+    for (int i = 0; i < num_sectors - 1; i++) {
+      if (data_sectors[i + 1] - data_sectors[i] > 3) {
+        num_fragmented++;
+      }
+    }
+  }
+
+  printf("%f", (float)num_fragmented / (float)num_fragmentable);
 }
 
 int defragment() {
