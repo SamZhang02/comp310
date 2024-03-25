@@ -22,7 +22,7 @@ void partial_write_message(int bytes_written, int bufsize) {
 }
 
 int copy_in(char *fname) {
-  FILE *fp = fopen(fname, "rb");
+  FILE *fp = fopen(fname, "r");
   int bufsize = 0;
   char *buffer = {};
 
@@ -114,13 +114,43 @@ void find_file(char *pattern) {
     }
 
     free(buffer);
+    file_close(f);
   }
 
   dir_close(dir);
 }
 
 void fragmentation_degree() {
-  // TODO
+  int num_fragmentable = 0;
+  int num_fragmented = 0;
+
+  struct dir *dir;
+  char name[NAME_MAX + 1];
+  dir = dir_open_root();
+
+  while (dir_readdir(dir, name)) {
+    struct file *f = filesys_open(name);
+    offset_t file_length = f->inode->data.length;
+    size_t num_sectors = bytes_to_sectors(file_length);
+
+    if (num_sectors > 1) {
+      num_fragmentable++;
+    }
+
+    block_sector_t *data_sectors = get_inode_data_sectors(f->inode);
+    for (int i = 0; i < num_sectors - 1; i++) {
+      int block_distance = data_sectors[i + 1] - data_sectors[i];
+      if (block_distance > 3) {
+        num_fragmented++;
+      }
+    }
+  }
+
+  printf("%f\n", num_fragmentable != 0
+                     ? num_fragmented / (double)num_fragmentable
+                     : 0.0);
+
+  dir_close(dir);
 }
 
 int defragment() {
@@ -128,15 +158,21 @@ int defragment() {
   return 0;
 }
 
+// recover deleted inodes
+void recover_0() {}
+
+// recover all non-empty sectors
+void recover_1() {}
+
+// data past end of file.
+void recover_2() {}
+
 void recover(int flag) {
-  if (flag == 0) { // recover deleted inodes
-
-    // TODO
-  } else if (flag == 1) { // recover all non-empty sectors
-
-    // TODO
-  } else if (flag == 2) { // data past end of file.
-
-    // TODO
+  if (flag == 0) {
+    recover_0();
+  } else if (flag == 1) {
+    recover_1();
+  } else if (flag == 2) {
+    recover_2();
   }
 }
