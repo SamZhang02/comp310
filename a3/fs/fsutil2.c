@@ -1,5 +1,6 @@
 #include "fsutil2.h"
 #include "../interpreter.h"
+#include "../linked_list.h"
 #include "bitmap.h"
 #include "cache.h"
 #include "debug.h"
@@ -153,8 +154,56 @@ void fragmentation_degree() {
   dir_close(dir);
 }
 
+struct file_metadata {
+  char *name;
+  char *content;
+  size_t size;
+};
+
 int defragment() {
-  // TODO
+  LINKED_LIST *existing_files = (LINKED_LIST *)malloc(sizeof(LINKED_LIST));
+  list_init(&existing_files, NULL);
+
+  struct dir *dir;
+  char name[NAME_MAX + 1];
+  dir = dir_open_root();
+
+  while (dir_readdir(dir, name)) {
+    // load content into a list (filename, buffer, size)
+    struct file_metadata *file_data = malloc(sizeof(struct file_metadata));
+
+    struct file *f = filesys_open(name);
+    offset_t f_length = file_length(f);
+
+    char *file_content = malloc(f_length);
+
+    file_seek(f, 0);
+    file_read(f, file_content, f_length);
+    file_seek(f, 0);
+
+    file_data->name = strdup(name);
+    file_data->content = strdup(file_content);
+    file_data->size = f_length;
+
+    free(file_content);
+
+    add_tail(file_data, existing_files);
+
+    fsutil_rm(name);
+  }
+
+  for (struct NODE *curr = existing_files->dummy_head->next;
+       curr != NULL && has_next(&curr); curr = curr->next) {
+
+    struct file_metadata *file_data = curr->data;
+    fsutil_write(file_data->name, file_data->content, file_data->size);
+
+    free(file_data->name);
+    free(file_data->content);
+  }
+
+  list_clear(existing_files);
+
   return 0;
 }
 
