@@ -81,7 +81,7 @@ struct dir *dir_open(struct inode *inode) {
   if (inode != NULL && dir != NULL) {
     dir->inode = inode;
     dir->pos = sizeof(struct dir_entry); // 0-pos is for parent directory
-	dir->open_cnt = 1;
+    dir->open_cnt = 1;
     return dir;
   } else {
     inode_close(inode);
@@ -93,14 +93,13 @@ struct dir *dir_open(struct inode *inode) {
 /* Opens the root directory and returns a directory for it.
    Return true if successful, false on failure. */
 struct dir *dir_open_root(void) {
-	if (cwd == NULL)
-	{
-		cwd = dir_open(inode_open(ROOT_DIR_SECTOR));
-		return cwd;
-	} else {
-		cwd->open_cnt += 1;
-		return cwd;
-	}
+  if (cwd == NULL) {
+    cwd = dir_open(inode_open(ROOT_DIR_SECTOR));
+    return cwd;
+  } else {
+    cwd->open_cnt += 1;
+    return cwd;
+  }
 }
 
 /* Opens the directory for given path. */
@@ -161,7 +160,7 @@ void dir_close(struct dir *dir) {
   if (dir != NULL && --dir->open_cnt == 0) {
     inode_close(dir->inode);
     free(dir);
-	cwd = NULL;
+    cwd = NULL;
   }
 }
 
