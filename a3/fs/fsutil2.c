@@ -129,6 +129,18 @@ void report_fragmentation_degree(int num_fragmentable, int num_fragmented,
          num_fragmentable, num_fragmented, pct);
 }
 
+int compare(const void *a, const void *b) {
+  int int_a = *((int *)a);
+  int int_b = *((int *)b);
+
+  if (int_a == int_b)
+    return 0;
+  else if (int_a < int_b)
+    return -1;
+  else
+    return 1;
+}
+
 void fragmentation_degree() {
   int num_fragmentable = 0;
   int num_fragmented = 0;
@@ -147,6 +159,9 @@ void fragmentation_degree() {
     }
 
     block_sector_t *data_sectors = get_inode_data_sectors(f->inode);
+
+    qsort(data_sectors, 6, sizeof(int), compare);
+
     for (int i = 0; i < num_sectors - 1; i++) {
       int block_distance = data_sectors[i + 1] - data_sectors[i];
       if (block_distance > 3) {
