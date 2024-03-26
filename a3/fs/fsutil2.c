@@ -36,8 +36,8 @@ int copy_in(char *fname) {
   bufsize = ftell(fp);
   fseek(fp, 0, SEEK_SET);
 
-  buffer = malloc(bufsize * sizeof(char) + 2);
-  memset(buffer, '\0', bufsize + 2);
+  buffer = malloc((bufsize + 1) * sizeof(char));
+  memset(buffer, '\0', (bufsize + 1) * sizeof(char));
 
   char c;
   int buffer_i = 0;
@@ -45,6 +45,8 @@ int copy_in(char *fname) {
     c = getc(fp);
     buffer[buffer_i] = c;
   }
+
+  buffer[buffer_i] = '\0';
 
   // TODO : if it doesnt fit it should create a smaller one instead
   if (!fsutil_create(fname, bufsize)) {
