@@ -208,10 +208,64 @@ int defragment() {
 }
 
 // recover deleted inodes
-void recover_0() {}
+void recover_0() {
+  for (block_sector_t sector = 4; sector < bitmap_size(free_map); sector++) {
+    unsigned long bit = ((unsigned long *)bitmap_get_bits(free_map))[sector];
+    bool bit_is_free = bit == 0;
+
+    if (!bit_is_free) {
+      continue;
+    }
+
+    struct inode *inode_at_sector = inode_open(sector);
+    if (inode_at_sector->data.magic != INODE_MAGIC) {
+      continue;
+    }
+
+    inode_restore(inode_at_sector);
+
+    char file_name[200];
+    sprintf(file_name, "recovered0-%d.txt", sector);
+
+    // add a reference to the recoverered inode from root dir
+    struct dir *root = dir_open_root();
+    dir_add(root, file_name, sector, false);
+
+    // add a reference to the recovered inode in the file table
+    struct file *recovered_file = file_open(inode_at_sector);
+    add_to_file_table(recovered_file, file_name);
+  }
+}
 
 // recover all non-empty sectors
-void recover_1() {}
+void recover_1() {
+  for (block_sector_t sector = 4; sector < bitmap_size(free_map); sector++) {
+    unsigned long bit = ((unsigned long *)bitmap_get_bits(free_map))[sector];
+    bool bit_is_free = bit == 0;
+
+    if (!bit_is_free) {
+      continue;
+    }
+
+    char buffer[BLOCK_SECTOR_SIZE];
+    buffer_cache_read(sector, buffer);
+
+    bool buffer_is_empty = buffer[0] == '\0';
+    if (buffer_is_empty) {
+      continue;
+    }
+
+    char file_name[200];
+    sprintf(file_name, "recovered1-%d.txt", sector);
+
+    fsutil_write(file_name, buffer, strlen(buffer));
+
+    FILE *fp = fopen(file_name, "w");
+
+    fprintf(fp, "%s", buffer);
+    fclose(fp);
+  }
+}
 
 // data past end of file.
 void recover_2() {}
