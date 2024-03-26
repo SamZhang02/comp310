@@ -122,6 +122,13 @@ void find_file(char *pattern) {
   dir_close(dir);
 }
 
+void report_fragmentation_degree(int num_fragmentable, int num_fragmented,
+                                 double pct) {
+  printf("Num fragmentable files: %d\nNum fragmented files: %d\nFragmentation "
+         "pct: %f\n",
+         num_fragmentable, num_fragmented, pct);
+}
+
 void fragmentation_degree() {
   int num_fragmentable = 0;
   int num_fragmented = 0;
@@ -148,9 +155,10 @@ void fragmentation_degree() {
     }
   }
 
-  printf("%f\n", num_fragmentable != 0
-                     ? num_fragmented / (double)num_fragmentable
-                     : 0.0);
+  double pct =
+      num_fragmentable != 0 ? num_fragmented / (double)num_fragmentable : 0.0;
+
+  report_fragmentation_degree(num_fragmentable, num_fragmented, pct);
 
   dir_close(dir);
 }
