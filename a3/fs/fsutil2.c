@@ -205,6 +205,7 @@ int defragment() {
        curr != NULL && has_next(&curr); curr = curr->next) {
 
     struct file_metadata *file_data = curr->data;
+    fsutil_create(file_data->name, file_data->size);
     fsutil_write(file_data->name, file_data->content, file_data->size);
 
     free(file_data->name);
