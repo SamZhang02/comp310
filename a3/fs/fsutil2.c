@@ -41,9 +41,8 @@ int copy_in(char *fname) {
 
   char c;
   int buffer_i = 0;
-  for (; !feof(fp); buffer_i += 1) {
-    c = getc(fp);
-    buffer[buffer_i] = c;
+  while ((c = getc(fp)) != EOF && buffer_i < bufsize) {
+    buffer[buffer_i++] = c;
   }
 
   buffer[buffer_i] = '\0';
