@@ -52,7 +52,7 @@ int copy_in(char *fname) {
     return FILE_CREATION_ERROR;
   }
 
-  int bytes_written = fsutil_write(fname, buffer, bufsize);
+  int bytes_written = fsutil_write(fname, buffer, bufsize + 1);
 
   free(buffer);
 
