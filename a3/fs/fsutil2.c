@@ -162,11 +162,12 @@ void fragmentation_degree() {
 
     block_sector_t *data_sectors = get_inode_data_sectors(f->inode);
 
+    // sort by small to large
     qsort(data_sectors, num_sectors, sizeof(int), compare);
 
     for (int i = 0; i < num_sectors - 1; i++) {
       int block_distance = data_sectors[i + 1] - data_sectors[i];
-      if (block_distance > 3) {
+      if (block_distance > 4) {
         num_fragmented++;
       }
     }
