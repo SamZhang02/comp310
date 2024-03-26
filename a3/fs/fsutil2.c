@@ -36,8 +36,8 @@ int copy_in(char *fname) {
   bufsize = ftell(fp);
   fseek(fp, 0, SEEK_SET);
 
-  buffer = malloc(bufsize * sizeof(char) + 1);
-  memset(buffer, '\0', bufsize + 1);
+  buffer = malloc(bufsize * sizeof(char) + 2);
+  memset(buffer, '\0', bufsize + 2);
 
   char c;
   int buffer_i = 0;
