@@ -38,7 +38,7 @@ int copy_in(char *fname) {
 
   buffer = malloc(bufsize * sizeof(char) + 1);
   memset(buffer, 0, bufsize);
-  buffer[bufsize - 1] = '\0';
+  buffer[bufsize + 1] = '\0';
 
   char c;
   for (int buffer_i = 0; !feof(fp); buffer_i += 1) {
