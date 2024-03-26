@@ -2,6 +2,7 @@
 #include "../interpreter.h"
 #include "../linked_list.h"
 #include "bitmap.h"
+#include "block.h"
 #include "cache.h"
 #include "debug.h"
 #include "directory.h"
@@ -207,33 +208,46 @@ int defragment() {
   return 0;
 }
 
+bool sector_is_inode(block_sector_t sector) {
+  struct inode *inode_at_sector = inode_open(sector);
+  return inode_at_sector->data.magic == INODE_MAGIC;
+}
+
 // recover deleted inodes
 void recover_0() {
-  for (block_sector_t sector = 4; sector < bitmap_size(free_map); sector++) {
-    unsigned long bit = ((unsigned long *)bitmap_get_bits(free_map))[sector];
-    bool bit_is_free = bit == 0;
 
-    if (!bit_is_free) {
+  unsigned long *free_map_bits = bitmap_get_bits(free_map);
+
+  for (block_sector_t inode_i = 0; inode_i < bitmap_size(free_map); inode_i++) {
+
+    bool bit_is_free = free_map_bits[inode_i] == 0;
+
+    if (!bit_is_free || !sector_is_inode(inode_i)) {
       continue;
     }
 
-    struct inode *inode_at_sector = inode_open(sector);
-    if (inode_at_sector->data.magic != INODE_MAGIC) {
-      continue;
+    struct inode *inode_to_recover = inode_open(inode_i);
+
+    // set inode as unavailable and bitmap as occupied
+    inode_restore(inode_to_recover);
+
+    block_sector_t *direct_sectors = get_inode_data_sectors(inode_to_recover);
+    int num_sectors_in_inode = bytes_to_sectors(inode_length(inode_to_recover));
+
+    for (int i = 0; i < num_sectors_in_inode; i++) {
+      bitmap_set(free_map, direct_sectors[i], true);
     }
 
-    inode_restore(inode_at_sector);
+    bitmap_set(free_map, inode_to_recover->data.doubly_indirect_block, true);
+    bitmap_set(free_map, inode_to_recover->data.indirect_block, true);
 
-    char file_name[200];
-    sprintf(file_name, "recovered0-%d.txt", sector);
+    char file_name[256];
+    sprintf(file_name, "recovered0-%d.txt", inode_i);
 
-    // add a reference to the recoverered inode from root dir
     struct dir *root = dir_open_root();
-    dir_add(root, file_name, sector, false);
+    dir_add(root, file_name, inode_i, false);
 
-    // add a reference to the recovered inode in the file table
-    struct file *recovered_file = file_open(inode_at_sector);
-    add_to_file_table(recovered_file, file_name);
+    dir_close(root);
   }
 }
 
@@ -243,7 +257,7 @@ void recover_1() {
     unsigned long bit = ((unsigned long *)bitmap_get_bits(free_map))[sector];
     bool bit_is_free = bit == 0;
 
-    if (!bit_is_free) {
+    if (!bit_is_free || sector_is_inode(sector)) {
       continue;
     }
 
@@ -255,7 +269,7 @@ void recover_1() {
       continue;
     }
 
-    char file_name[200];
+    char file_name[256];
     sprintf(file_name, "recovered1-%d.txt", sector);
 
     fsutil_write(file_name, buffer, strlen(buffer));

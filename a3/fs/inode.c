@@ -197,7 +197,7 @@ void inode_remove(struct inode *inode) {
 
 void inode_restore(struct inode *inode) {
   ASSERT(inode != NULL);
-  inode->removed = true;
+  inode->removed = false;
 }
 
 /* Reads SIZE bytes from INODE into BUFFER, starting at position OFFSET.
