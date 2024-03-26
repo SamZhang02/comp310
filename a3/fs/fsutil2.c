@@ -45,7 +45,7 @@ int copy_in(char *fname) {
     buffer[buffer_i] = c;
   }
 
-  buffer[buffer_i] = '\0';
+  buffer[buffer_i + 1] = '\0';
 
   // TODO : if it doesnt fit it should create a smaller one instead
   if (!fsutil_create(fname, bufsize)) {
