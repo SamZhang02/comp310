@@ -167,8 +167,9 @@ void fragmentation_degree() {
 
     for (int i = 0; i < num_sectors - 1; i++) {
       int block_distance = data_sectors[i + 1] - data_sectors[i];
-      if (block_distance > 4) {
+      if (block_distance > 3) {
         num_fragmented++;
+        break;
       }
     }
   }
