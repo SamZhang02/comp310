@@ -239,6 +239,7 @@ int defragment() {
 bool sector_is_inode(block_sector_t sector) {
   struct inode *inode_at_sector = inode_open(sector);
   return inode_at_sector->data.magic == INODE_MAGIC;
+  inode_close(inode_at_sector);
 }
 
 // recover deleted inodes
