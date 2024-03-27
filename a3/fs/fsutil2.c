@@ -284,7 +284,7 @@ void recover_1() {
     // unsigned long bit = ((unsigned long *)bitmap_get_bits(free_map))[sector];
     // bool bit_is_free = bit == false;
 
-    if (!sector_is_inode(sector)) {
+    if (sector_is_inode(sector)) {
       continue;
     }
 
