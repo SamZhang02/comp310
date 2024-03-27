@@ -244,17 +244,15 @@ bool sector_is_inode(block_sector_t sector) {
 // recover deleted inodes
 void recover_0() {
 
-  unsigned long *free_map_bits = bitmap_get_bits(free_map);
+  for (block_sector_t i = 0; i < bitmap_size(free_map); i++) {
 
-  for (block_sector_t inode_i = 0; inode_i < bitmap_size(free_map); inode_i++) {
+    bool bit_is_free = (bitmap_test(free_map, i) == 0);
 
-    bool bit_is_free = free_map_bits[inode_i] == 0;
-
-    if (!bit_is_free || !sector_is_inode(inode_i)) {
+    if (!bit_is_free || !sector_is_inode(i)) {
       continue;
     }
 
-    struct inode *inode_to_recover = inode_open(inode_i);
+    struct inode *inode_to_recover = inode_open(i);
 
     // set inode as unavailable and bitmap as occupied
     inode_restore(inode_to_recover);
@@ -270,10 +268,10 @@ void recover_0() {
     bitmap_set(free_map, inode_to_recover->data.indirect_block, true);
 
     char file_name[256];
-    sprintf(file_name, "recovered0-%d.txt", inode_i);
+    sprintf(file_name, "recovered0-%d.txt", i);
 
     struct dir *root = dir_open_root();
-    dir_add(root, file_name, inode_i, false);
+    dir_add(root, file_name, i, false);
 
     dir_close(root);
   }
