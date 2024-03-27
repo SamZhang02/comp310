@@ -238,16 +238,6 @@ bool sector_is_inode(block_sector_t sector) {
   return inode_at_sector->data.magic == INODE_MAGIC;
 }
 
-// TODO: investate recover_0 and the issue with free_map_release()
-// Steps to reproduce:
-// 1. start shell with clean disk
-// 2. copy in a file
-// 3. remove file
-// 4. call recover 0
-// 5. remove the recovereds file
-// 6. expect to see a panic with free_map_release(), due to not all sectors
-// being set as 1
-
 // recover deleted inodes
 void recover_0() {
 
@@ -266,10 +256,9 @@ void recover_0() {
     block_sector_t *direct_sectors = get_inode_data_sectors(inode_to_recover);
     int num_sectors_in_inode = bytes_to_sectors(inode_length(inode_to_recover));
 
-    for (int i = 0; i < num_sectors_in_inode; i++) {
-      bitmap_set(free_map, direct_sectors[i], true);
-    }
-
+    bitmap_set(free_map, sector_i, true);
+    bitmap_set_multiple(free_map, direct_sectors[0], num_sectors_in_inode,
+                        true);
     bitmap_set(free_map, inode_to_recover->data.doubly_indirect_block, true);
     bitmap_set(free_map, inode_to_recover->data.indirect_block, true);
 
