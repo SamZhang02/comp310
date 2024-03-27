@@ -239,7 +239,6 @@ int defragment() {
 bool sector_is_inode(block_sector_t sector) {
   struct inode *inode_at_sector = inode_open(sector);
   return inode_at_sector->data.magic == INODE_MAGIC;
-  inode_close(inode_at_sector);
 }
 
 // recover deleted inodes
@@ -256,12 +255,6 @@ void recover_0() {
     }
 
     struct inode *inode_to_recover = inode_open(inode_i);
-    if (inode_is_directory(inode_to_recover) ||
-        inode_length(inode_to_recover) == 0 ||
-        !inode_is_removed(inode_to_recover)) {
-      inode_close(inode_to_recover);
-      continue;
-    }
 
     // set inode as unavailable and bitmap as occupied
     inode_restore(inode_to_recover);
