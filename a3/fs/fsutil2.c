@@ -263,6 +263,10 @@ void recover_0() {
     block_sector_t *direct_sectors = get_inode_data_sectors(inode_to_recover);
     int num_sectors_in_inode = bytes_to_sectors(inode_length(inode_to_recover));
 
+    if (num_sectors_in_inode == 0) {
+      continue;
+    }
+
     for (int i = 0; i < num_sectors_in_inode; i++) {
       bitmap_set(free_map, direct_sectors[i], true);
     }
