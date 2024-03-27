@@ -309,7 +309,38 @@ void recover_1() {
 }
 
 // data past end of file.
-void recover_2() {}
+void recover_2() {
+  struct dir *dir;
+  char name[NAME_MAX + 1];
+
+  dir = dir_open_root();
+
+  while (dir_readdir(dir, name)) {
+    struct file *f = filesys_open(name);
+    struct inode *f_inode = f->inode;
+
+    block_sector_t sector = inode_length(f_inode) / BLOCK_SECTOR_SIZE;
+    size_t offset = (inode_length(f_inode) % BLOCK_SECTOR_SIZE);
+
+    char buffer[BLOCK_SECTOR_SIZE] = {'\0'};
+
+    buffer_cache_read(sector, buffer);
+
+    char file_name[256];
+    sprintf(file_name, "recovered2-%d.txt", sector);
+
+    bool has_hidden_data = false;
+    FILE *fp = fopen(file_name, "w");
+    for (int i = offset; i < BLOCK_SECTOR_SIZE; i++) {
+      putc(buffer[i], fp);
+    }
+
+    fclose(fp);
+    file_close(f);
+  }
+
+  dir_close(dir);
+}
 
 void recover(int flag) {
   if (flag == 0) {
