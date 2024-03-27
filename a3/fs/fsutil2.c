@@ -60,7 +60,7 @@ int copy_in(char *fname) {
     return handle_error(FILE_WRITE_ERROR);
   }
 
-  if (bytes_written != bufsize) {
+  if (bytes_written != bufsize + 1) {
     partial_write_message(bytes_written, bufsize);
   }
 
