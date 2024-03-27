@@ -162,9 +162,6 @@ void fragmentation_degree() {
 
     block_sector_t *data_sectors = get_inode_data_sectors(f->inode);
 
-    // sort by small to large
-    qsort(data_sectors, num_sectors, sizeof(int), compare);
-
     for (int i = 0; i < num_sectors - 1; i++) {
       int block_distance = data_sectors[i + 1] - data_sectors[i];
       if (block_distance > 3) {
@@ -240,6 +237,16 @@ bool sector_is_inode(block_sector_t sector) {
   struct inode *inode_at_sector = inode_open(sector);
   return inode_at_sector->data.magic == INODE_MAGIC;
 }
+
+// TODO: investate recover_0 and the issue with free_map_release()
+// Steps to reproduce:
+// 1. start shell with clean disk
+// 2. copy in a file
+// 3. remove file
+// 4. call recover 0
+// 5. remove the recovereds file
+// 6. expect to see a panic with free_map_release(), due to not all sectors
+// being set as 1
 
 // recover deleted inodes
 void recover_0() {
