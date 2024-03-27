@@ -329,7 +329,6 @@ void recover_2() {
     char file_name[256];
     sprintf(file_name, "recovered2-%s.txt", name);
 
-    bool has_hidden_data = false;
     FILE *fp = fopen(file_name, "w");
     for (int i = offset; i < BLOCK_SECTOR_SIZE; i++) {
       putc(buffer[i], fp);
