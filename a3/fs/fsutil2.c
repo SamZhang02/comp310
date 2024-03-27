@@ -327,7 +327,7 @@ void recover_2() {
     buffer_cache_read(sector, buffer);
 
     char file_name[256];
-    sprintf(file_name, "recovered2-%d.txt", sector);
+    sprintf(file_name, "recovered2-%s.txt", name);
 
     bool has_hidden_data = false;
     FILE *fp = fopen(file_name, "w");
