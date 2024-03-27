@@ -247,9 +247,7 @@ void recover_0() {
 
   for (block_sector_t i = 0; i < bitmap_size(free_map); i++) {
 
-    // bool bit_is_free = (bitmap_test(free_map, i) == 0);
-    unsigned long bit = ((unsigned long *)bitmap_get_bits(free_map))[i];
-    bool bit_is_free = bit == false;
+    bool bit_is_free = (bitmap_test(free_map, i) == 0);
 
     if (!bit_is_free || !sector_is_inode(i)) {
       continue;
