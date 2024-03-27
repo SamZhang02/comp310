@@ -188,7 +188,6 @@ struct file_metadata {
   size_t size;
 };
 
-// TODO: refactor to save offset
 int defragment() {
   LINKED_LIST *existing_files = (LINKED_LIST *)malloc(sizeof(LINKED_LIST));
   list_init(&existing_files, NULL);
@@ -245,19 +244,18 @@ bool sector_is_inode(block_sector_t sector) {
 // recover deleted inodes
 void recover_0() {
 
-  for (block_sector_t i = 0; i < bitmap_size(free_map); i++) {
+  for (block_sector_t sector_i = 0; sector_i < bitmap_size(free_map);
+       sector_i++) {
 
-    bool bit_is_free = (bitmap_test(free_map, i) == false);
+    bool bit_is_free = (bitmap_test(free_map, sector_i) == false);
 
-    if (!bit_is_free || !sector_is_inode(i)) {
+    if (!bit_is_free || !sector_is_inode(sector_i)) {
       continue;
     }
 
-    struct inode *inode_to_recover = inode_open(i);
+    struct inode *inode_to_recover = inode_open(sector_i);
 
-    // set inode as unavailable and bitmap as occupied
-    inode_restore(inode_to_recover);
-
+    // --- set bitmap as occupied ---
     block_sector_t *direct_sectors = get_inode_data_sectors(inode_to_recover);
     int num_sectors_in_inode = bytes_to_sectors(inode_length(inode_to_recover));
 
@@ -268,11 +266,12 @@ void recover_0() {
     bitmap_set(free_map, inode_to_recover->data.doubly_indirect_block, true);
     bitmap_set(free_map, inode_to_recover->data.indirect_block, true);
 
+    // ---- create file -----
     char file_name[256];
-    sprintf(file_name, "recovered0-%d", i);
+    sprintf(file_name, "recovered0-%d", sector_i);
 
     struct dir *root = dir_open_root();
-    dir_add(root, file_name, i, false);
+    dir_add(root, file_name, sector_i, false);
 
     dir_close(root);
   }
@@ -281,6 +280,9 @@ void recover_0() {
 // recover all non-empty sectors
 void recover_1() {
   for (block_sector_t sector = 4; sector < bitmap_size(free_map); sector++) {
+    // NOTE: Apparently we do not check for whether the bit is free (public test
+    // 10)
+
     // unsigned long bit = ((unsigned long *)bitmap_get_bits(free_map))[sector];
     // bool bit_is_free = bit == false;
 
