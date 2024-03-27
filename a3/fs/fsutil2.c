@@ -188,6 +188,7 @@ struct file_metadata {
   size_t size;
 };
 
+// TODO: refactor to save offset
 int defragment() {
   LINKED_LIST *existing_files = (LINKED_LIST *)malloc(sizeof(LINKED_LIST));
   list_init(&existing_files, NULL);
@@ -268,7 +269,7 @@ void recover_0() {
     bitmap_set(free_map, inode_to_recover->data.indirect_block, true);
 
     char file_name[256];
-    sprintf(file_name, "recovered0-%d.txt", i);
+    sprintf(file_name, "recovered0-%d", i);
 
     struct dir *root = dir_open_root();
     dir_add(root, file_name, i, false);
