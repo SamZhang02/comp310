@@ -257,7 +257,9 @@ void recover_0() {
 
     struct inode *inode_to_recover = inode_open(inode_i);
     if (inode_is_directory(inode_to_recover) ||
-        inode_length(inode_to_recover) == 0) {
+        inode_length(inode_to_recover) == 0 ||
+        !inode_is_removed(inode_to_recover)) {
+      inode_close(inode_to_recover);
       continue;
     }
 
