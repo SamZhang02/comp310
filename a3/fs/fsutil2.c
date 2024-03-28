@@ -293,10 +293,8 @@ int defragment() {
     file_seek(f, 0);
 
     file_data->name = strdup(name);
-    file_data->content = strdup(file_content);
+    file_data->content = file_content;
     file_data->size = f_length;
-
-    free(file_content);
 
     add_tail(file_data, existing_files);
 
