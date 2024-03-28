@@ -304,7 +304,7 @@ int defragment() {
   }
 
   for (struct NODE *curr = existing_files->dummy_head->next;
-       curr != NULL && has_next(&curr); curr = curr->next) {
+       curr != NULL && curr != existing_files->dummy_tail; curr = curr->next) {
 
     struct file_data *file_data = curr->data;
     fsutil_create(file_data->name, file_data->size);
