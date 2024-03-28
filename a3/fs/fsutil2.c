@@ -286,8 +286,7 @@ int defragment() {
     struct file *f = filesys_open(name);
     offset_t f_length = file_length(f);
 
-    char *file_content = malloc(f_length + 1);
-    file_content[f_length] = '\0';
+    char *file_content = malloc((f_length) * sizeof(char));
 
     file_seek(f, 0);
     file_read(f, file_content, f_length);
