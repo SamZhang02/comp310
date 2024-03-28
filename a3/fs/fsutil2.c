@@ -12,13 +12,93 @@
 #include "fsutil.h"
 #include "inode.h"
 #include "off_t.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+// -------- copy_in ---------
 void partial_write_message(int bytes_written, int bufsize) {
   printf("Warning: could only write %d out of %d bytes (reached end of file\n",
          bytes_written, bufsize);
+}
+
+int get_overhead(int size) {
+  /* Compute the overhead (number of extra data blocks used to store inodes and
+   * adjacents)*/
+  if (size <= DIRECT_BLOCKS_COUNT * BLOCK_SECTOR_SIZE) {
+    return BLOCK_SECTOR_SIZE;
+  }
+
+  if (size <= DIRECT_BLOCKS_COUNT * BLOCK_SECTOR_SIZE +
+                  INDIRECT_BLOCKS_PER_SECTOR * BLOCK_SECTOR_SIZE) {
+    return 2 * BLOCK_SECTOR_SIZE;
+  }
+  double remainder = size - (DIRECT_BLOCKS_COUNT * BLOCK_SECTOR_SIZE +
+                             INDIRECT_BLOCKS_PER_SECTOR * BLOCK_SECTOR_SIZE);
+  double rem_data_blocks = ceil(remainder / BLOCK_SECTOR_SIZE);
+  double pt_blocks_required =
+      ceil(rem_data_blocks / INDIRECT_BLOCKS_PER_SECTOR);
+
+  // space for inode + indirect block + double indirect block + di
+  // indirectblocks
+  return (3 + ceil(pt_blocks_required)) * BLOCK_SECTOR_SIZE;
+}
+
+size_t get_write_size(size_t bufsize, size_t free_space) {
+
+  size_t write_size;
+
+  // many logical braches to compute the write size
+  if (free_space == 1) {
+    // we only have space for an inode, no writing file content
+    write_size = 0;
+
+    return write_size;
+  }
+
+  if (bufsize >= free_space) {
+    // the file is larger than the free space, write the free space minus its
+    // overhead
+    write_size = free_space;
+    write_size -= get_overhead(write_size);
+
+    return write_size;
+  }
+
+  int file_overhead = get_overhead(bufsize);
+  int spaces_left_for_overhead = free_space - bufsize;
+
+  if (file_overhead <= spaces_left_for_overhead) {
+    // we have enough space to write both the entire file and its overhead
+    write_size = bufsize;
+    return write_size;
+  }
+
+  switch (spaces_left_for_overhead) {
+  case 1:
+    // only have enough space to store the direct blocks, so we can only
+    // write into those
+    write_size = DIRECT_BLOCKS_COUNT * BLOCK_SECTOR_SIZE;
+    break;
+  case 2:
+  case 3:
+    // only have enough space to store the direct blocks and the single
+    // indirect blocks, so we can only write into those
+    write_size = DIRECT_BLOCKS_COUNT * BLOCK_SECTOR_SIZE +
+                 INDIRECT_BLOCKS_PER_SECTOR * BLOCK_SECTOR_SIZE;
+    break;
+  default:
+    // we store the direct blocks + the single indirect blocks + as many
+    // blocks of points from the double indirect blocks as possible
+    spaces_left_for_overhead -= 3;
+    write_size = DIRECT_BLOCKS_COUNT * BLOCK_SECTOR_SIZE +
+                 INDIRECT_BLOCKS_PER_SECTOR * BLOCK_SECTOR_SIZE +
+                 spaces_left_for_overhead * BLOCK_SECTOR_SIZE;
+    break;
+  }
+
+  return write_size;
 }
 
 int copy_in(char *fname) {
@@ -31,11 +111,11 @@ int copy_in(char *fname) {
   }
 
   fseek(fp, 0, SEEK_END);
-  bufsize = ftell(fp);
+  bufsize = ftell(fp) + 1;
   fseek(fp, 0, SEEK_SET);
 
-  buffer = malloc((bufsize + 1) * sizeof(char));
-  memset(buffer, '\0', (bufsize + 1) * sizeof(char));
+  buffer = malloc((bufsize) * sizeof(char));
+  memset(buffer, '\0', (bufsize) * sizeof(char));
 
   char c;
   int buffer_i = 0;
@@ -45,12 +125,20 @@ int copy_in(char *fname) {
 
   buffer[buffer_i] = '\0';
 
-  // TODO : if it doesnt fit it should create a smaller one instead
-  if (!fsutil_create(fname, bufsize)) {
+  int num_free_sectors = fsutil_freespace();
+  if (num_free_sectors == 0) {
+    return FILE_WRITE_ERROR;
+  }
+
+  size_t free_space = num_free_sectors * BLOCK_SECTOR_SIZE;
+
+  size_t write_size = get_write_size(bufsize, free_space);
+
+  if (!fsutil_create(fname, write_size)) {
     return FILE_CREATION_ERROR;
   }
 
-  int bytes_written = fsutil_write(fname, buffer, bufsize + 1);
+  int bytes_written = fsutil_write(fname, buffer, write_size);
 
   free(buffer);
 
@@ -58,12 +146,14 @@ int copy_in(char *fname) {
     return FILE_WRITE_ERROR;
   }
 
-  if (bytes_written != bufsize + 1) {
-    partial_write_message(bytes_written, bufsize);
+  if (bytes_written != bufsize) {
+    partial_write_message(bytes_written, bufsize + 1);
   }
 
   return 0;
 }
+
+// -------- copy_out ---------
 
 int copy_out(char *fname) {
   if (!fsutil_file_exists(fname)) {
@@ -98,6 +188,8 @@ int copy_out(char *fname) {
   return 0;
 }
 
+// -------- find_file ---------
+
 void find_file(char *pattern) {
   struct dir *dir;
   char name[NAME_MAX + 1];
@@ -125,6 +217,8 @@ void find_file(char *pattern) {
 
   dir_close(dir);
 }
+
+// -------- report_fragmentation_degree ---------
 
 void report_fragmentation_degree(int num_fragmentable, int num_fragmented,
                                  double pct) {
@@ -168,6 +262,8 @@ void fragmentation_degree() {
 
   dir_close(dir);
 }
+
+// -------- defragment ---------
 
 struct file_data {
   char *name;
@@ -223,6 +319,8 @@ int defragment() {
   return 0;
 }
 
+// -------- recover ---------
+
 bool sector_is_inode(block_sector_t sector) {
   struct inode *inode_at_sector = inode_open(sector);
   return inode_at_sector->data.magic == INODE_MAGIC;
@@ -266,8 +364,8 @@ void recover_0() {
 // recover all non-empty sectors
 void recover_1() {
   for (block_sector_t sector = 4; sector < bitmap_size(free_map); sector++) {
-    // NOTE: Apparently we do not check for whether the bit is free (public test
-    // 10)
+    // NOTE: Apparently we do not check for whether the bit is free (public
+    // test 10)
 
     if (sector_is_inode(sector)) {
       continue;
@@ -314,10 +412,10 @@ void recover_2() {
     block_sector_t *sector = get_inode_data_sectors(f_inode);
     int num_sectors_in_inode = bytes_to_sectors(inode_length(f_inode));
     block_sector_t last_sector = sector[num_sectors_in_inode - 1];
-    offset_t offset =
-        (inode_length(f_inode) %
-         BLOCK_SECTOR_SIZE); // offset so we don't read the actual file's data,
-                             // but only what's past it in the block
+
+    // offset so we don't read the actual file's data, but only what's past it
+    // in the block
+    offset_t offset = (inode_length(f_inode) % BLOCK_SECTOR_SIZE);
 
     char buffer[BLOCK_SECTOR_SIZE];
 
@@ -325,6 +423,18 @@ void recover_2() {
 
     char file_name[256];
     sprintf(file_name, "recovered2-%s.txt", name);
+
+    bool file_has_leftover_data = false;
+    for (int i = offset; i < BLOCK_SECTOR_SIZE; i++) {
+      if (buffer[i] != '\0') {
+        file_has_leftover_data = true;
+        break;
+      }
+    }
+
+    if (!file_has_leftover_data) {
+      continue;
+    }
 
     FILE *fp = fopen(file_name, "w");
 
