@@ -2,12 +2,10 @@
 #define READY_QUEUE_H
 #include "pcb.h"
 #define MAX_INT 2147483646
-
-typedef struct QueueNode {
-  PCB *pcb;
-  struct QueueNode *next;
+typedef struct QueueNode{
+    PCB *pcb;
+    struct QueueNode *next;
 } QueueNode;
-
 void ready_queue_destory();
 void ready_queue_add_to_tail(QueueNode *node);
 void print_ready_queue();
