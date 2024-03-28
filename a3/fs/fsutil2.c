@@ -265,14 +265,21 @@ void recover_1() {
     // NOTE: Apparently we do not check for whether the bit is free (public test
     // 10)
 
-    // if (sector_is_inode(sector)) {
-    //   continue;
-    // }
+    if (sector_is_inode(sector)) {
+      continue;
+    }
 
     char buffer[BLOCK_SECTOR_SIZE];
     buffer_cache_read(sector, buffer);
 
-    bool buffer_is_empty = buffer[0] == '\0';
+    bool buffer_is_empty = true;
+    for (int i = 0; i < BLOCK_SECTOR_SIZE; i++) {
+      if (buffer[i] != '\0') {
+        buffer_is_empty = false;
+        break;
+      };
+    }
+
     if (buffer_is_empty) {
       continue;
     }
