@@ -326,6 +326,10 @@ void recover_2() {
     FILE *fp = fopen(file_name, "w");
 
     for (int i = offset; i < BLOCK_SECTOR_SIZE; i++) {
+      if (buffer[i] == '\0') {
+        continue;
+      }
+
       fputc(buffer[i], fp);
     }
 
