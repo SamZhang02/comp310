@@ -12,7 +12,6 @@
 #include "fsutil.h"
 #include "inode.h"
 #include "off_t.h"
-#include "partition.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -279,9 +278,6 @@ void recover_1() {
     // NOTE: Apparently we do not check for whether the bit is free (public test
     // 10)
 
-    // unsigned long bit = ((unsigned long *)bitmap_get_bits(free_map))[sector];
-    // bool bit_is_free = bit == false;
-
     if (sector_is_inode(sector)) {
       continue;
     }
@@ -317,19 +313,20 @@ void recover_2() {
     struct file *f = filesys_open(name);
     struct inode *f_inode = f->inode;
 
-    block_sector_t sector = inode_length(f_inode) / BLOCK_SECTOR_SIZE;
-    size_t offset = (inode_length(f_inode) % BLOCK_SECTOR_SIZE);
+    block_sector_t *sector = get_inode_data_sectors(f_inode);
+    offset_t offset = (inode_length(f_inode) % BLOCK_SECTOR_SIZE);
 
-    char buffer[BLOCK_SECTOR_SIZE] = {'\0'};
+    char buffer[BLOCK_SECTOR_SIZE];
 
-    buffer_cache_read(sector, buffer);
+    buffer_cache_read(*sector, buffer);
 
     char file_name[256];
     sprintf(file_name, "recovered2-%s.txt", name);
 
     FILE *fp = fopen(file_name, "w");
+
     for (int i = offset; i < BLOCK_SECTOR_SIZE; i++) {
-      putc(buffer[i], fp);
+      fputc(buffer[i], fp);
     }
 
     fclose(fp);
