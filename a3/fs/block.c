@@ -40,6 +40,15 @@ static void check_sector(struct block *block, block_sector_t sector) {
    have room for BLOCK_SECTOR_SIZE bytes. */
 void block_read(struct block *block, block_sector_t sector, void *buffer) {
   ASSERT(block != NULL);
+  block->ops->read(block->aux, sector, buffer);
+  block->read_cnt++;
+}
+
+/* Reads sector SECTOR from BLOCK into BUFFER,
+   have room for BLOCK_SECTOR_SIZE bytes. */
+void block_read_unsafe(struct block *block, block_sector_t sector,
+                       void *buffer) {
+  ASSERT(block != NULL);
   check_sector(block, sector);
   block->ops->read(block->aux, sector, buffer);
   block->read_cnt++;
