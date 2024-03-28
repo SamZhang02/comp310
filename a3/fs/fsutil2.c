@@ -307,8 +307,8 @@ int defragment() {
        curr != NULL && curr != existing_files->dummy_tail; curr = curr->next) {
 
     struct file_data *file_data = curr->data;
-    fsutil_create(file_data->name, file_data->size + 1);
-    fsutil_write(file_data->name, file_data->content, file_data->size + 1);
+    fsutil_create(file_data->name, file_data->size);
+    fsutil_write(file_data->name, file_data->content, file_data->size);
 
     free(file_data->name);
     free(file_data->content);
