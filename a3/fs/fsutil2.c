@@ -284,7 +284,7 @@ int defragment() {
     struct file_data *file_data = malloc(sizeof(struct file_data));
 
     struct file *f = filesys_open(name);
-    offset_t f_length = file_length(f);
+    offset_t f_length = file_length(f) + 1;
 
     char *file_content = malloc(f_length);
 
@@ -294,6 +294,7 @@ int defragment() {
 
     file_data->name = strdup(name);
     file_data->content = strdup(file_content);
+    file_data->content[f_length - 1] = '\0';
     file_data->size = f_length;
 
     free(file_content);
