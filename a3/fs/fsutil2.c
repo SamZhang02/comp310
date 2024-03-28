@@ -218,7 +218,7 @@ void find_file(char *pattern) {
   dir_close(dir);
 }
 
-// -------- report_fragmentation_degree ---------
+// -------- fragmentation_degree ---------
 
 void report_fragmentation_degree(int num_fragmentable, int num_fragmented,
                                  double pct) {
