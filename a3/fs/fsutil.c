@@ -7,6 +7,7 @@
 #include "free-map.h"
 #include "inode.h"
 #include "partition.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -136,3 +137,14 @@ int fsutil_seek(char *file_name, int offset) {
 void fsutil_close(char *file_name) { remove_from_file_table(file_name); }
 
 int fsutil_freespace() { return num_free_sectors(); }
+
+bool fsutil_file_exists(char *file_name) {
+  struct file *file_s = get_file_by_fname(file_name);
+  if (file_s == NULL) {
+    file_s = filesys_open(file_name);
+    if (file_s == NULL) {
+      return false;
+    }
+  }
+  return true;
+}

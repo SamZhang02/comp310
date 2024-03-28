@@ -1,5 +1,6 @@
 #ifndef FILESYS_FSUTIL_H
 #define FILESYS_FSUTIL_H
+#include <stdbool.h>
 
 int fsutil_ls(char *);
 int fsutil_cat(char *);
@@ -12,5 +13,6 @@ int fsutil_size(char *file_name);
 int fsutil_seek(char *file_name, int offset);
 void fsutil_close(char *file_name);
 int fsutil_freespace();
+bool fsutil_file_exists(char *file_name);
 
 #endif /* fs/fsutil.h */

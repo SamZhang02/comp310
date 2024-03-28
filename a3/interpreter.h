@@ -2,6 +2,7 @@
 #define INTERPRETER_H
 
 enum Error {
+  PLACEHOLDER, // placeholder so an error never has a status code of 0
   FILE_DOES_NOT_EXIST,
   NO_MEM_SPACE,
   READY_QUEUE_FULL,

@@ -17,8 +17,7 @@
 #include <string.h>
 
 void partial_write_message(int bytes_written, int bufsize) {
-  printf("Warning: could only write %d out of %d bytes (reached end of "
-         "file)\n",
+  printf("Warning: could only write %d out of %d bytes (reached end of file\n",
          bytes_written, bufsize);
 }
 
@@ -67,6 +66,10 @@ int copy_in(char *fname) {
 }
 
 int copy_out(char *fname) {
+  if (!fsutil_file_exists(fname)) {
+    return FILE_DOES_NOT_EXIST;
+  }
+
   int bufsize = fsutil_size(fname); // in bytes
   char *buffer = malloc(bufsize);
 
@@ -78,13 +81,14 @@ int copy_out(char *fname) {
     free(buffer);
     return FILE_READ_ERROR;
   }
+
   fsutil_seek(fname, 0);
 
   FILE *fp = fopen(fname, "w");
 
   if (fp == NULL) {
     free(buffer);
-    return EXTERNAL_FILE_READ_ERROR;
+    return FILE_READ_ERROR;
   }
 
   fprintf(fp, "%s", buffer);
@@ -165,14 +169,14 @@ void fragmentation_degree() {
   dir_close(dir);
 }
 
-struct file_metadata {
+struct file_data {
   char *name;
   char *content;
   size_t size;
 };
 
 int defragment() {
-  LINKED_LIST *existing_files = (LINKED_LIST *)malloc(sizeof(LINKED_LIST));
+  LINKED_LIST *existing_files = malloc(sizeof(LINKED_LIST));
   list_init(&existing_files, NULL);
 
   struct dir *dir;
@@ -181,7 +185,7 @@ int defragment() {
 
   while (dir_readdir(dir, name)) {
     // load content into a list (filename, buffer, size)
-    struct file_metadata *file_data = malloc(sizeof(struct file_metadata));
+    struct file_data *file_data = malloc(sizeof(struct file_data));
 
     struct file *f = filesys_open(name);
     offset_t f_length = file_length(f);
@@ -206,7 +210,7 @@ int defragment() {
   for (struct NODE *curr = existing_files->dummy_head->next;
        curr != NULL && has_next(&curr); curr = curr->next) {
 
-    struct file_metadata *file_data = curr->data;
+    struct file_data *file_data = curr->data;
     fsutil_create(file_data->name, file_data->size);
     fsutil_write(file_data->name, file_data->content, file_data->size);
 
