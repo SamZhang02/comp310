@@ -45,6 +45,62 @@ int get_overhead(int size) {
   return (3 + ceil(pt_blocks_required)) * BLOCK_SECTOR_SIZE;
 }
 
+size_t get_write_size(size_t bufsize, size_t free_space) {
+
+  size_t write_size;
+
+  // many logical braches to compute the write size
+  if (free_space == 1) {
+    // we only have space for an inode, no writing file content
+    write_size = 0;
+
+    return write_size;
+  }
+
+  if (bufsize >= free_space) {
+    // the file is larger than the free space, write the free space minus its
+    // overhead
+    write_size = free_space;
+    write_size -= get_overhead(write_size);
+
+    return write_size;
+  }
+
+  int file_overhead = get_overhead(bufsize);
+  int spaces_left_for_overhead = free_space - bufsize;
+
+  if (file_overhead <= spaces_left_for_overhead) {
+    // we have enough space to write both the entire file and its overhead
+    write_size = bufsize;
+    return write_size;
+  }
+
+  switch (spaces_left_for_overhead) {
+  case 1:
+    // only have enough space to store the direct blocks, so we can only
+    // write into those
+    write_size = DIRECT_BLOCKS_COUNT * BLOCK_SECTOR_SIZE;
+    break;
+  case 2:
+  case 3:
+    // only have enough space to store the direct blocks and the single
+    // indirect blocks, so we can only write into those
+    write_size = DIRECT_BLOCKS_COUNT * BLOCK_SECTOR_SIZE +
+                 INDIRECT_BLOCKS_PER_SECTOR * BLOCK_SECTOR_SIZE;
+    break;
+  default:
+    // we store the direct blocks + the single indirect blocks + as many
+    // blocks of points from the double indirect blocks as possible
+    spaces_left_for_overhead -= 3;
+    write_size = DIRECT_BLOCKS_COUNT * BLOCK_SECTOR_SIZE +
+                 INDIRECT_BLOCKS_PER_SECTOR * BLOCK_SECTOR_SIZE +
+                 spaces_left_for_overhead * BLOCK_SECTOR_SIZE;
+    break;
+  }
+
+  return write_size;
+}
+
 int copy_in(char *fname) {
   FILE *fp = fopen(fname, "r");
   int bufsize = 0;
@@ -73,53 +129,10 @@ int copy_in(char *fname) {
   if (num_free_sectors == 0) {
     return FILE_WRITE_ERROR;
   }
+
   size_t free_space = num_free_sectors * BLOCK_SECTOR_SIZE;
 
-  size_t write_size;
-
-  // many logical braches to compute the write size
-  if (free_space == 1) {
-    // we only have space for an inode, no writing file content
-    write_size = 0;
-
-  } else if (bufsize >= free_space) {
-    // the file is larger than the free space, write the free space minus its
-    // overhead
-    write_size = free_space;
-    write_size -= get_overhead(write_size);
-
-  } else {
-    int file_overhead = get_overhead(bufsize);
-    int spaces_left_for_overhead = free_space - bufsize;
-
-    if (file_overhead <= spaces_left_for_overhead) {
-      // we have enough space to write both the entire file and its overhead
-      write_size = bufsize;
-    } else {
-      switch (spaces_left_for_overhead) {
-      case 1:
-        // only have enough space to store the direct blocks, so we can only
-        // write into those
-        write_size = DIRECT_BLOCKS_COUNT * BLOCK_SECTOR_SIZE;
-        break;
-      case 2:
-      case 3:
-        // only have enough space to store the direct blocks and the single
-        // indirect blocks, so we can only write into those
-        write_size = DIRECT_BLOCKS_COUNT * BLOCK_SECTOR_SIZE +
-                     INDIRECT_BLOCKS_PER_SECTOR * BLOCK_SECTOR_SIZE;
-        break;
-      default:
-        // we store the direct blocks + the single indirect blocks + as many
-        // blocks of points from the double indirect blocks as possible
-        spaces_left_for_overhead -= 3;
-        write_size = DIRECT_BLOCKS_COUNT * BLOCK_SECTOR_SIZE +
-                     INDIRECT_BLOCKS_PER_SECTOR * BLOCK_SECTOR_SIZE +
-                     spaces_left_for_overhead * BLOCK_SECTOR_SIZE;
-        break;
-      }
-    }
-  }
+  size_t write_size = get_write_size(bufsize, free_space);
 
   if (!fsutil_create(fname, write_size)) {
     return FILE_CREATION_ERROR;
