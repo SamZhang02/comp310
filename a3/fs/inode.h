@@ -44,7 +44,6 @@ struct inode *inode_reopen(struct inode *);
 block_sector_t inode_get_inumber(const struct inode *);
 void inode_close(struct inode *);
 void inode_remove(struct inode *);
-void inode_restore(struct inode *inode);
 offset_t inode_read_at(struct inode *, void *, offset_t size, offset_t offset);
 offset_t inode_write_at(struct inode *, const void *, offset_t size,
                         offset_t offset);

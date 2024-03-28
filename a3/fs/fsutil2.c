@@ -314,11 +314,16 @@ void recover_2() {
     struct inode *f_inode = f->inode;
 
     block_sector_t *sector = get_inode_data_sectors(f_inode);
-    offset_t offset = (inode_length(f_inode) % BLOCK_SECTOR_SIZE);
+    int num_sectors_in_inode = bytes_to_sectors(inode_length(f_inode));
+    block_sector_t last_sector = sector[num_sectors_in_inode - 1];
+    offset_t offset =
+        (inode_length(f_inode) %
+         BLOCK_SECTOR_SIZE); // offset so we don't read the actual file's data,
+                             // but only what's past it in the block
 
     char buffer[BLOCK_SECTOR_SIZE];
 
-    buffer_cache_read(*sector, buffer);
+    buffer_cache_read(last_sector, buffer);
 
     char file_name[256];
     sprintf(file_name, "recovered2-%s.txt", name);
