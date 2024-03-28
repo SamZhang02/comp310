@@ -284,13 +284,13 @@ int defragment() {
     struct file_data *file_data = malloc(sizeof(struct file_data));
 
     struct file *f = filesys_open(name);
-    offset_t f_length = file_length(f) + 1;
+    offset_t f_length = file_length(f);
 
-    char *file_content = malloc(f_length);
+    char *file_content = malloc(f_length + 1);
+    file_content[f_length] = '\0';
 
     file_seek(f, 0);
     file_read(f, file_content, f_length);
-    file_content[f_length - 1] = '\0';
     file_seek(f, 0);
 
     file_data->name = strdup(name);
