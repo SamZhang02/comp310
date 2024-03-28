@@ -56,7 +56,7 @@ int copy_in(char *fname) {
   free(buffer);
 
   if (bytes_written == -1) {
-    return handle_error(FILE_WRITE_ERROR);
+    return FILE_WRITE_ERROR;
   }
 
   if (bytes_written != bufsize + 1) {
@@ -127,19 +127,6 @@ void report_fragmentation_degree(int num_fragmentable, int num_fragmented,
   printf("Num fragmentable files: %d\nNum fragmented files: %d\nFragmentation "
          "pct: %f\n",
          num_fragmentable, num_fragmented, pct);
-}
-
-// sorting function
-int compare(const void *a, const void *b) {
-  int int_a = *((int *)a);
-  int int_b = *((int *)b);
-
-  if (int_a == int_b)
-    return 0;
-  else if (int_a < int_b)
-    return -1;
-  else
-    return 1;
 }
 
 void fragmentation_degree() {
@@ -278,9 +265,9 @@ void recover_1() {
     // NOTE: Apparently we do not check for whether the bit is free (public test
     // 10)
 
-    if (sector_is_inode(sector)) {
-      continue;
-    }
+    // if (sector_is_inode(sector)) {
+    //   continue;
+    // }
 
     char buffer[BLOCK_SECTOR_SIZE];
     buffer_cache_read(sector, buffer);
