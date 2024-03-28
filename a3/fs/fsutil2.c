@@ -290,11 +290,11 @@ int defragment() {
 
     file_seek(f, 0);
     file_read(f, file_content, f_length);
+    file_content[f_length - 1] = '\0';
     file_seek(f, 0);
 
     file_data->name = strdup(name);
     file_data->content = strdup(file_content);
-    file_data->content[f_length - 1] = '\0';
     file_data->size = f_length;
 
     free(file_content);
