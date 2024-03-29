@@ -447,6 +447,25 @@ void recover_2() {
 
   dir_close(dir);
 }
+void recover_4() {
+    // Iterate through each file in the filesystem.
+    struct dir *dir = dir_open_root();
+    char name[NAME_MAX + 1];
+    while (dir_readdir(dir, name)) {
+        struct file *f = filesys_open(name);
+        if (!f) continue; // Skip if file cannot be opened.
+        
+        char hidden_data[10000];
+        if (extract_hidden_data_from_metadata(f->inode, hidden_data)) {
+            char file_name[256];
+            sprintf(file_name, "recovered4-%s.txt", name);
+            fsutil_write(file_name, hidden_data, 10000);
+        }
+        
+        file_close(f); // Close the file.
+    }
+    dir_close(dir); // Close the directory.
+}
 
 void recover(int flag) {
   if (flag == 0) {
@@ -455,5 +474,11 @@ void recover(int flag) {
     recover_1();
   } else if (flag == 2) {
     recover_2();
+  } else if (flag == 3) {
+    recover_4();
+  } else if (flag == 4) {
+    recover_4();
+  } else if (flag == 5) {
+    recover_5();
   }
 }
