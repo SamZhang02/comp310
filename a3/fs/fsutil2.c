@@ -448,81 +448,6 @@ void recover_2() {
   dir_close(dir);
 }
 
-void recover_3() {
-    // Loop through each sector at the end of the disk image file.
-    
-    for (block_sector_t sector = end_of_filesystem_sector; /* condition */; sector++) {
-        // Check if sector is marked as bad or reserved.
-        if (is_sector_bad_or_reserved(sector)) {
-            continue;
-        }
-        
-        // Read the sector's data.
-        char buffer[BLOCK_SECTOR_SIZE];
-        buffer_cache_read(sector, buffer);
-        
-        // Check for non-zero data indicating potential hidden data.
-        bool found_data = false;
-        for (int i = 0; i < BLOCK_SECTOR_SIZE; i++) {
-            if (buffer[i] != '\0') {
-                found_data = true;
-                break;
-            }
-        }
-        
-        // If hidden data is found, write it to an external file.
-        if (found_data) {
-            char file_name[256];
-            sprintf(file_name, "recovered3-%d.txt", sector);
-            fsutil_write(file_name, buffer, BLOCK_SECTOR_SIZE);
-        }
-    }
-}
-
-void recover_4() {
-    // Iterate through each file in the filesystem.
-    struct dir *dir = dir_open_root();
-    char name[NAME_MAX + 1];
-    while (dir_readdir(dir, name)) {
-        struct file *f = filesys_open(name);
-        if (!f) continue; // Skip if file cannot be opened.
-        
-    
-        
-        // If hidden data is found in the metadata, extract and save it.
-        char hidden_data[/* appropriate size */];
-        if (extract_hidden_data_from_metadata(f->inode, hidden_data)) {
-            char file_name[256];
-            sprintf(file_name, "recovered4-%s.txt", name);
-            fsutil_write(file_name, hidden_data, /* size of hidden data */);
-        }
-        
-        file_close(f); // Close the file.
-    }
-    dir_close(dir); // Close the directory.
-}
-
-
-// void recover_5() {
-    
-    
-//     for () {
-//         char buffer[BLOCK_SECTOR_SIZE];
-//         // Logic to read specific parts of the disk image directly.
-//         // This might require custom functions to bypass the filesystem abstraction layers.
-        
-//         // Analyze the read buffer for patterns indicating hidden data.
-//         bool found_data = false;
-//         // Logic to detect hidden data.
-        
-//         if (found_data) {
-//             char file_name[256];
-//             sprintf(file_name, "recovered5-[specific identifier].txt");
-//             fsutil_write(file_name, buffer, /* detected data size */);
-//         }
-//     }
-// }
-
 void recover(int flag) {
   if (flag == 0) {
     recover_0();
@@ -530,12 +455,5 @@ void recover(int flag) {
     recover_1();
   } else if (flag == 2) {
     recover_2();
-  } else if (flag == 3) {
-    recover_3();
-  } else if (flag == 4) {
-    recover_4();
-  } 
-  // else if (flag == 5) {
-  //   recover_5();
-  // }
+  }
 }
