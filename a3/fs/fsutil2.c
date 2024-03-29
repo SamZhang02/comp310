@@ -479,6 +479,6 @@ void recover(int flag) {
   } else if (flag == 4) {
     recover_4();
   } else if (flag == 5) {
-    recover_5();
+    recover_4();
   }
 }
