@@ -447,26 +447,6 @@ void recover_2() {
 
   dir_close(dir);
 }
-void recover_4() {
-    // Iterate through each file in the filesystem.
-    struct dir *dir = dir_open_root();
-    char name[NAME_MAX + 1];
-    while (dir_readdir(dir, name)) {
-        struct file *f = filesys_open(name);
-        if (!f) continue; // Skip if file cannot be opened.
-        
-        char hidden_data[10000];
-        if (extract_hidden_data_from_metadata(f->inode, hidden_data)) {
-            char file_name[256];
-            sprintf(file_name, "recovered4-%s.txt", name);
-            fsutil_write(file_name, hidden_data, 10000);
-        }
-        
-        file_close(f); // Close the file.
-    }
-    dir_close(dir); // Close the directory.
-}
-
 int extract_hidden_data_from_metadata(const struct inode *inode, char *hidden_data) {
     // Assuming 'hidden_data' is sufficiently large and the inode structure contains a field 'extra_data'
     // that might hold hidden information. This is a fictional example to illustrate the concept.
@@ -496,6 +476,26 @@ int extract_hidden_data_from_metadata(const struct inode *inode, char *hidden_da
 
     return found_hidden_data;
 }
+void recover_4() {
+    // Iterate through each file in the filesystem.
+    struct dir *dir = dir_open_root();
+    char name[NAME_MAX + 1];
+    while (dir_readdir(dir, name)) {
+        struct file *f = filesys_open(name);
+        if (!f) continue; // Skip if file cannot be opened.
+        
+        char hidden_data[10000];
+        if (extract_hidden_data_from_metadata(f->inode, hidden_data)) {
+            char file_name[256];
+            sprintf(file_name, "recovered4-%s.txt", name);
+            fsutil_write(file_name, hidden_data, 10000);
+        }
+        
+        file_close(f); // Close the file.
+    }
+    dir_close(dir); // Close the directory.
+}
+
 
 void recover(int flag) {
   if (flag == 0) {
