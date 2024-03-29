@@ -467,6 +467,36 @@ void recover_4() {
     dir_close(dir); // Close the directory.
 }
 
+int extract_hidden_data_from_metadata(const struct inode *inode, char *hidden_data) {
+    // Assuming 'hidden_data' is sufficiently large and the inode structure contains a field 'extra_data'
+    // that might hold hidden information. This is a fictional example to illustrate the concept.
+    // In reality, you would need to analyze the specific inode structure for your filesystem.
+
+    int found_hidden_data = -1;
+    
+    // Example: Check if the inode has a non-standard timestamp indicating hidden data.
+    // This is purely illustrative and would depend on actual inode fields and how data might be hidden.
+    if (inode->timestamp > SOME_ARBITRARY_VALUE) {
+        // Suppose we determine that hidden data is indicated by a specific timestamp value.
+        // The actual extraction method would depend on where and how data is hidden in the inode.
+        
+        // For example, if hidden data is stored in a reserved field:
+        memcpy(hidden_data, inode->extra_data, 10000);
+        found_hidden_data = 1;
+    }
+
+    // Another example: Check if 'extra_data' field, normally unused, contains non-zero data.
+    if (!found_hidden_data && memcmp(inode->extra_data, "\0", SIZE_OF_EXTRA_DATA) != 0) {
+        // Assume extra_data contains hidden data if it's not all zeros.
+        memcpy(hidden_data, inode->extra_data, 10000);
+        found_hidden_data = 1;
+    }
+
+    // Add other conditions as necessary depending on how data might be hidden within the inode.
+
+    return found_hidden_data;
+}
+
 void recover(int flag) {
   if (flag == 0) {
     recover_0();
