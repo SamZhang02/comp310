@@ -23,9 +23,11 @@ void partial_write_message(int bytes_written, int bufsize) {
          bytes_written, bufsize);
 }
 
+/*
+ * Compute the overhead (number of extra data blocks used to store inodes and
+ * adjacents)
+ */
 int get_overhead(int size) {
-  /* Compute the overhead (number of extra data blocks used to store inodes and
-   * adjacents)*/
   if (size <= DIRECT_BLOCKS_COUNT * BLOCK_SECTOR_SIZE) {
     return BLOCK_SECTOR_SIZE;
   }
@@ -45,6 +47,10 @@ int get_overhead(int size) {
   return (3 + ceil(pt_blocks_required)) * BLOCK_SECTOR_SIZE;
 }
 
+/*
+ * Compute the total write size that we will be able to fit in our disk's free
+ * space
+ */
 size_t get_write_size(size_t bufsize, size_t free_space) {
 
   size_t write_size;
@@ -280,7 +286,7 @@ int defragment() {
   dir = dir_open_root();
 
   while (dir_readdir(dir, name)) {
-    // load content into a list (filename, buffer, size)
+    // load file information into a linked list (filename, buffer, size)
     struct file_data *file_data = malloc(sizeof(struct file_data));
 
     struct file *f = filesys_open(name);
@@ -316,9 +322,19 @@ int defragment() {
 
 // -------- recover ---------
 
+/*
+ * Given a sector, check whether it represents an inode
+ */
 bool sector_is_inode(block_sector_t sector) {
   struct inode *inode_at_sector = inode_open(sector);
   return inode_at_sector->data.magic == INODE_MAGIC;
+}
+
+/*
+ * Given a sector, check whether it is free
+ */
+bool bit_is_free(block_sector_t sector) {
+  return (bitmap_test(free_map, sector) == false);
 }
 
 // recover deleted inodes
@@ -327,9 +343,7 @@ void recover_0() {
   for (block_sector_t sector_i = 0; sector_i < bitmap_size(free_map);
        sector_i++) {
 
-    bool bit_is_free = (bitmap_test(free_map, sector_i) == false);
-
-    if (!bit_is_free || !sector_is_inode(sector_i)) {
+    if (!bit_is_free(sector_i) || !sector_is_inode(sector_i)) {
       continue;
     }
 
@@ -345,8 +359,8 @@ void recover_0() {
     bitmap_set(free_map, inode_to_recover->data.doubly_indirect_block, true);
     bitmap_set(free_map, inode_to_recover->data.indirect_block, true);
 
-    // ---- create file -----
-    char file_name[256];
+    // ---- create file and write into it -----
+    char file_name[NAME_MAX + 1];
     sprintf(file_name, "recovered0-%d", sector_i);
 
     struct dir *root = dir_open_root();
@@ -381,10 +395,8 @@ void recover_1() {
       continue;
     }
 
-    char file_name[256];
+    char file_name[NAME_MAX + 1];
     sprintf(file_name, "recovered1-%d.txt", sector);
-
-    fsutil_write(file_name, buffer, strlen(buffer));
 
     FILE *fp = fopen(file_name, "w");
 
@@ -416,7 +428,7 @@ void recover_2() {
 
     buffer_cache_read(last_sector, buffer);
 
-    char file_name[256];
+    char file_name[NAME_MAX + 1];
     sprintf(file_name, "recovered2-%s.txt", name);
 
     bool file_has_leftover_data = false;
